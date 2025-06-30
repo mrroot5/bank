@@ -1,0 +1,56 @@
+networks:
+  default:
+    name: bank_net
+
+name: bank
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    command:
+      ["sh", "-c", "elixir --sname web_$(hostname) --cookie web -S mix phx.server"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: 1
+          memory: 300M
+    entrypoint: ['./docker/entrypoint.sh']
+    environment:
+      MIX_ENV: dev
+    ports:
+      - "4000:4000"
+    ulimits:
+      nofile: 65536
+    volumes:
+      - .:/app
+  postgres:
+    deploy:
+      resources:
+        limits:
+          cpus: 1
+          memory: 200M
+    command: -p 5432
+    environment:
+      POSTGRES_USER: bank
+      POSTGRES_PASSWORD: "HelloPostgres!"
+      POSTGRES_HOST_AUTH_METHOD: trust
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bank -p 5432"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 25s
+    image: postgres:17.5-alpine3.22
+    restart: always
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data: {}
