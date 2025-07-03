@@ -31,10 +31,13 @@ bank-*.tar
 # Ignore digested assets cache.
 /priv/static/cache_manifest.json
 
+# Ignore ex_cldr locales
+/priv/cldr
+
 # In case you use Node.js/npm, you want to ignore these.
 npm-debug.log
 /assets/node_modules/
 
+# Ignore vscode settings
 .vscode
-
 .elixir_ls
