@@ -33,9 +33,11 @@ defmodule Bank.MixProject do
   defp deps do
     [
       {:bandit, "~> 1.5"},
+      {:decimal, "~> 2.0"},
       {:dns_cluster, "~> 0.1.1"},
       {:ecto_sql, "~> 3.10"},
       {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
+      {:ex_money, "~> 5.0"},
       {:finch, "~> 0.13"},
       {:floki, ">= 0.30.0", only: :test},
       {:gettext, "~> 0.26"},
