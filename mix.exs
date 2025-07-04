@@ -34,7 +34,7 @@ defmodule Bank.MixProject do
     [
       {:bandit, "~> 1.5"},
       {:decimal, "~> 2.0"},
-      {:dns_cluster, "~> 0.1.1"},
+      {:dns_cluster, "~> 0.2.0"},
       {:ecto_sql, "~> 3.10"},
       {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
       {:ex_money, "~> 5.0"},
