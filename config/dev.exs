@@ -62,6 +62,10 @@ config :bank, BankWeb.Endpoint,
     ]
   ]
 
+config :bank, Bank.Cldr,
+  # a single locale, for fast compilation in dev / test
+  locales: ["en", "es"]
+
 # Enable dev routes for dashboard and mailbox
 config :bank, dev_routes: true
 
