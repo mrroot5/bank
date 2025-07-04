@@ -7,8 +7,12 @@ The idea behind this project is based on my
 
 WIP.
 
-## How to use it
+## Up & running
 
 ```shell
-docker compose up
+docker compose up -d && docker compose logs -f web
 ```
+
+## Why I did the project this way?
+
+Pleas check [whys](./whys/README.md) folder.

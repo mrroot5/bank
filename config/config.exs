@@ -31,6 +31,10 @@ config :bank, BankWeb.Endpoint,
 # at the `config/runtime.exs`.
 config :bank, Bank.Mailer, adapter: Swoosh.Adapters.Local
 
+config :bank, Bank.Cldr,
+  # a single locale, for fast compilation in dev / test
+  locales: ["en-*", "es-*"]
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.17.11",
@@ -40,6 +44,15 @@ config :esbuild,
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
+
+config :ex_cldr,
+  default_locale: "en",
+  default_backend: Bank.Cldr
+
+config :ex_money,
+  auto_start_exchange_rate_service: false,
+  # each hour
+  exchange_rates_retrieve_every: 3_600_000
 
 # Configure tailwind (the version is required)
 config :tailwind,
