@@ -1,0 +1,84 @@
+name: Tests
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+jobs:
+  test:
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+    name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        elixir:
+          - 1.18.4
+        otp:
+          - 27.5
+    services:
+      postgres:
+        image: postgres:17.5-alpine3.22
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+          --health-start-period 25s
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+
+    env:
+      MIX_ENV: test
+      # If your config/test.exs reads from DATABASE_URL:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Elixir ${{ matrix.elixir } & OTP ${{ matrix.otp }
+        uses: erlef/setup-elixir@v1
+        with:
+          elixir-version: ${{matrix.elixir}}
+          otp-version: ${{matrix.otp}}
+
+      - name: Restore compile cache
+        uses: actions/cache@v3
+        with:
+          path: _build/test
+          key:  ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-build-cache
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-build-cache
+
+      - name: Install deps & compile
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+          mix deps.get
+          mix compile --warnings-as-errors
+
+      - name: Create and migrate database
+        run: |
+          # wait for Postgres to be ready
+          until pg_isready -h localhost -U postgres; do
+            echo "Waiting for Postgres..."
+            sleep 1
+          done
+          mix ecto.create
+          mix ecto.migrate
+
+      - name: Run tests
+        run: mix test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: "_build/test/log"
+          retention-days: 30 # days, default: 90
