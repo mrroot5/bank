@@ -47,15 +47,19 @@ jobs:
           elixir-version: ${{matrix.elixir}}
           otp-version: ${{matrix.otp}}
 
-      - name: Restore caches
+      - name: Restore compile cache
         uses: actions/cache@v4
         with:
-          path: |
-            deps
-            _build/test
+          path: _build/test
           key:  ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-build-cache
           restore-keys: |
             ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-build-cache
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: deps
+          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-deps
 
       - name: Install deps & compile
         run: |
