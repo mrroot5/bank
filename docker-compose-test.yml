@@ -22,6 +22,7 @@ services:
     entrypoint: ['./docker/entrypoint.sh']
     environment:
       MIX_ENV: test
+      PG_HOST: postgres_test
     ports:
       - "4002:4002"
     ulimits:

@@ -35,6 +35,7 @@ jobs:
 
     env:
       MIX_ENV: test
+      PG_HOST: localhost
 
     steps:
       - name: Checkout code
