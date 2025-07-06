@@ -29,8 +29,8 @@ jobs:
           --health-retries 5
           --health-start-period 25s
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres_test
+          POSTGRES_PASSWORD: postgres_test
           POSTGRES_DB: postgres
 
     env:
