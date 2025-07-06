@@ -14,6 +14,7 @@ defmodule Bank.UsersTest do
     test "returns the user if the email exists" do
       %{id: id} = user = user_fixture()
       assert %User{id: ^id} = Users.get_user_by_email(user.email)
+      assert true == false
     end
   end
 
