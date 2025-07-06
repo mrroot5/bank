@@ -14,8 +14,9 @@ jobs:
       matrix:
         elixir:
           - 1.18.4
+        # Allowed versions: https://builds.hex.pm/builds/otp/ubuntu-24.04/builds.txt
         otp:
-          - 27.5
+          - 28.0.1
     services:
       postgres:
         image: postgres:17.5-alpine3.22

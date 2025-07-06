@@ -1,4 +1,4 @@
-FROM amd64/elixir:1.18.4-otp-27-slim
+FROM amd64/elixir:1.18.4-otp-28-slim
 
 # Create required dirs
 RUN mkdir /app
