@@ -16,3 +16,5 @@ docker compose up -d && docker compose logs -f web
 ## Why I did the project this way?
 
 Pleas check [whys](./whys/README.md) folder.
+
+try caches
