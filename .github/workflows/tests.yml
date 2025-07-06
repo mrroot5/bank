@@ -35,8 +35,6 @@ jobs:
 
     env:
       MIX_ENV: test
-      # If your config/test.exs reads from DATABASE_URL:
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
 
     steps:
       - name: Checkout code
@@ -75,14 +73,3 @@ jobs:
 
       - name: Run tests
         run: mix test
-
-      # https://github.com/actions/upload-artifact?tab=readme-ov-file#usage
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ github.sha }}
-          path: "_build/test/log"
-          retention-days: 30 # days, default: 90
-          compression-level: 9
-          overwrite: true
