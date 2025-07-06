@@ -32,6 +32,7 @@ defmodule Bank.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:argon2_elixir, "~> 3.0"},
       {:bandit, "~> 1.5"},
       {:decimal, "~> 2.0"},
       {:dns_cluster, "~> 0.2.0"},

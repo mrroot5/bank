@@ -10,6 +10,7 @@ ENV APP="/app"
 # inotify-tools required by live code reloading
 RUN apt update -qq && \
     apt install -y --no-install-recommends inotify-tools \
+    build-essential \
     ca-certificates \
     git && \
     apt clean && \
