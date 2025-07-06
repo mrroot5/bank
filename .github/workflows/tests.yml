@@ -41,7 +41,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Elixir ${{ matrix.elixir } & OTP ${{ matrix.otp }
+      - name: Set up Elixir ${{ matrix.elixir }} & OTP ${{ matrix.otp }}
         uses: erlef/setup-elixir@v1
         with:
           elixir-version: ${{matrix.elixir}}
