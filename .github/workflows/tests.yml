@@ -54,12 +54,16 @@ jobs:
           key:  ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-build-cache
           restore-keys: |
             ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-build-cache
+            ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
 
       - name: Restore dependencies cache
         uses: actions/cache@v4
         with:
           path: deps
-          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-deps
+          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-deps-cache
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-deps-cache
+            ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
 
       - name: Install deps & compile
         run: |
