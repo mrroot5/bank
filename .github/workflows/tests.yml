@@ -73,7 +73,7 @@ jobs:
           mix local.hex --force
           mix local.rebar --force
           mix deps.get
-          mix compile --warnings-as-errors --no-deps-check
+          mix compile --warnings-as-errors
 
       - name: Create and migrate database
         run: |
