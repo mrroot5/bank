@@ -34,6 +34,7 @@ defmodule Bank.MixProject do
     [
       {:argon2_elixir, "~> 3.0"},
       {:bandit, "~> 1.5"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:decimal, "~> 2.0"},
       {:dns_cluster, "~> 0.2.0"},
       {:ecto_sql, "~> 3.10"},
