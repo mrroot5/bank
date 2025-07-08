@@ -39,6 +39,7 @@ defmodule Bank.MixProject do
       {:dns_cluster, "~> 0.2.0"},
       {:ecto_sql, "~> 3.10"},
       {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
+      {:excellent_migrations, "~> 0.1", only: [:dev, :test], runtime: false},
       {:ex_money, "~> 5.0"},
       {:finch, "~> 0.13"},
       {:floki, ">= 0.30.0", only: :test},
