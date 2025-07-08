@@ -9,7 +9,8 @@ defmodule Bank.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      dialyzer: dialyzer()
     ]
   end
 
@@ -35,6 +36,7 @@ defmodule Bank.MixProject do
       {:argon2_elixir, "~> 3.0"},
       {:bandit, "~> 1.5"},
       {:decimal, "~> 2.0"},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:dns_cluster, "~> 0.2.0"},
       {:ecto_sql, "~> 3.10"},
       {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
@@ -83,6 +85,13 @@ defmodule Bank.MixProject do
         "esbuild bank --minify",
         "phx.digest"
       ]
+    ]
+  end
+
+  defp dialyzer do
+    [
+      plt_add_apps: [:mix, :ex_unit],
+      ignore_warnings: ".dialyzer_ignore.exs"
     ]
   end
 end
