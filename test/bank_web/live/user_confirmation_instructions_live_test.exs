@@ -4,8 +4,8 @@ defmodule BankWeb.UserConfirmationInstructionsLiveTest do
   import Phoenix.LiveViewTest
   import Bank.UsersFixtures
 
-  alias Bank.Users
   alias Bank.Repo
+  alias Bank.Users
 
   setup do
     %{user: user_fixture()}

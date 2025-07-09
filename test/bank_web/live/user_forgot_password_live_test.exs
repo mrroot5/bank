@@ -4,8 +4,8 @@ defmodule BankWeb.UserForgotPasswordLiveTest do
   import Phoenix.LiveViewTest
   import Bank.UsersFixtures
 
-  alias Bank.Users
   alias Bank.Repo
+  alias Bank.Users
 
   describe "Forgot password page" do
     test "renders email page", %{conn: conn} do

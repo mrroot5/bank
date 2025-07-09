@@ -1,9 +1,10 @@
 defmodule BankWeb.UserAuthTest do
   use BankWeb.ConnCase, async: true
 
-  alias Phoenix.LiveView
   alias Bank.Users
   alias BankWeb.UserAuth
+  alias Phoenix.LiveView
+
   import Bank.UsersFixtures
 
   @remember_me_cookie "_bank_web_user_remember_me"
@@ -139,7 +140,7 @@ defmodule BankWeb.UserAuthTest do
     end
 
     test "assigns nil to current_user assign if there isn't a user_token", %{conn: conn} do
-      session = conn |> get_session()
+      session = get_session(conn)
 
       {:cont, updated_socket} =
         UserAuth.on_mount(:mount_current_user, %{}, session, %LiveView.Socket{})
@@ -173,7 +174,7 @@ defmodule BankWeb.UserAuthTest do
     end
 
     test "redirects to login page if there isn't a user_token", %{conn: conn} do
-      session = conn |> get_session()
+      session = get_session(conn)
 
       socket = %LiveView.Socket{
         endpoint: BankWeb.Endpoint,
@@ -200,7 +201,7 @@ defmodule BankWeb.UserAuthTest do
     end
 
     test "doesn't redirect if there is no authenticated user", %{conn: conn} do
-      session = conn |> get_session()
+      session = get_session(conn)
 
       assert {:cont, _updated_socket} =
                UserAuth.on_mount(

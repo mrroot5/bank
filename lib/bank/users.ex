@@ -6,7 +6,9 @@ defmodule Bank.Users do
   import Ecto.Query, warn: false
   alias Bank.Repo
 
-  alias Bank.Users.{User, UserToken, UserNotifier}
+  alias Bank.Users.User
+  alias Bank.Users.UserNotifier
+  alias Bank.Users.UserToken
 
   ## Database getters
 
