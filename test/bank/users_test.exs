@@ -1,5 +1,5 @@
 defmodule Bank.UsersTest do
-  use Bank.DataCase
+  use Bank.DataCase, async: true
 
   import Bank.UsersFixtures
 

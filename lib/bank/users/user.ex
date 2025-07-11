@@ -91,7 +91,7 @@ defmodule Bank.Users.User do
   """
   @spec confirm_changeset(Ecto.Schema.t()) :: Ecto.Changeset.t()
   def confirm_changeset(user) do
-    now = DateTime.truncate(DateTime.utc_now(), :second)
+    now = DateTime.utc_now(:second)
     change(user, confirmed_at: now)
   end
 
