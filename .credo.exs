@@ -96,6 +96,7 @@
           ## Readability Checks
           #
           {Credo.Check.Readability.AliasOrder, []},
+          {Credo.Check.Readability.BlockPipe, []},
           {Credo.Check.Readability.FunctionNames, []},
           {Credo.Check.Readability.ImplTrue, []},
           {Credo.Check.Readability.LargeNumbers, []},
@@ -115,9 +116,37 @@
           {Credo.Check.Readability.RedundantBlankLines, []},
           {Credo.Check.Readability.Semicolons, []},
           {Credo.Check.Readability.SeparateAliasRequire, []},
+          {Credo.Check.Readability.SingleFunctionToBlockPipe, []},
           {Credo.Check.Readability.SinglePipe, []},
           {Credo.Check.Readability.SpaceAfterCommas, []},
           {Credo.Check.Readability.Specs, []},
+          {Credo.Check.Readability.StrictModuleLayout,
+           [
+             # Order similar than elixir style guide
+             # https://github.com/christopheradams/elixir_style_guide#module-attribute-ordering
+             order: [
+               :shortdoc,
+               :moduledoc,
+               :behaviour,
+               :use,
+               :import,
+               :require,
+               :alias,
+               :module_attribute,
+               :defstruct,
+               :type,
+               :typep,
+               :opaque,
+               :callback_impl,
+               :public_fun,
+               :private_fun,
+               :public_macro,
+               :private_macro,
+               :module,
+               :public_guard,
+               :private_guard
+             ]
+           ]},
           {Credo.Check.Readability.StringSigils, []},
           {Credo.Check.Readability.TrailingBlankLine, []},
           {Credo.Check.Readability.TrailingWhiteSpace, []},
@@ -128,6 +157,8 @@
           #
           ## Refactoring Opportunities
           #
+          # This check is a work in progress and the max_size param would be changed in future. Default: 30
+          {Credo.Check.Refactor.ABCSize, [max_size: 10, excluded_functions: []]},
           {Credo.Check.Refactor.AppendSingleItem, []},
           {Credo.Check.Refactor.Apply, []},
           {Credo.Check.Refactor.CondStatements, []},
@@ -135,6 +166,7 @@
           {Credo.Check.Refactor.FilterCount, []},
           {Credo.Check.Refactor.FilterFilter, []},
           {Credo.Check.Refactor.FunctionArity, []},
+          {Credo.Check.Refactor.IoPuts, []},
           {Credo.Check.Refactor.LongQuoteBlocks, []},
           {Credo.Check.Refactor.MapInto, []},
           {Credo.Check.Refactor.MapJoin, []},
@@ -189,59 +221,17 @@
         disabled: [
           #
           {Credo.Check.Consistency.MultiAliasImportRequireUse, []},
-          #
-          # Controversial and experimental checks (opt-in, just move the check to `:enabled`
-          #   and be sure to use `mix credo --strict` to see low priority checks)
-          #
 
-          {Credo.Check.Design.SkipTestWithoutComment, []},
           # You can also customize the exit_status of each check.
           # If you don't want TODO comments to cause `mix credo` to fail, just
           # set this value to 0 (zero).
           #
           {Credo.Check.Design.TagTODO, [exit_status: 2]},
           {Credo.Check.Readability.AliasAs, []},
-          {Credo.Check.Readability.BlockPipe, []},
-          {Credo.Check.Readability.NestedFunctionCalls, []},
-          {Credo.Check.Readability.OneArityFunctionInPipe, []},
-          {Credo.Check.Readability.OnePipePerLine, []},
-          {Credo.Check.Readability.SeparateAliasRequire, []},
-          {Credo.Check.Readability.SingleFunctionToBlockPipe, []},
-          {Credo.Check.Readability.SinglePipe, []},
-          {Credo.Check.Readability.Specs, []},
-          {Credo.Check.Readability.StrictModuleLayout,
-           [
-             # Order similar than elixir style guide
-             # https://github.com/christopheradams/elixir_style_guide#module-attribute-ordering
-             order: [
-               :shortdoc,
-               :moduledoc,
-               :behaviour,
-               :use,
-               :import,
-               :require,
-               :alias,
-               :module_attribute,
-               :defstruct,
-               :type,
-               :typep,
-               :opaque,
-               :public_macro,
-               :private_macro,
-               :module,
-               :public_guard,
-               :private_guard,
-               :callback_impl,
-               :public_fun,
-               :private_fun
-             ]
-           ]},
           {Credo.Check.Readability.WithCustomTaggedTuple, []},
-          {Credo.Check.Refactor.ABCSize, []},
           {Credo.Check.Refactor.AppendSingleItem, []},
           {Credo.Check.Refactor.DoubleBooleanNegation, []},
           {Credo.Check.Refactor.FilterReject, []},
-          {Credo.Check.Refactor.IoPuts, []},
           {Credo.Check.Refactor.NegatedIsNil, []},
           {Credo.Check.Refactor.PipeChainStart, []},
           {Credo.Check.Refactor.VariableRebinding, []},
