@@ -141,8 +141,12 @@ defmodule BankWeb.UserSettingsLive do
         }
 
       {:error, changeset} ->
-        # FIXME complex
-        {:noreply, assign(socket, :email_form, to_form(Map.put(changeset, :action, :insert)))}
+        to_form =
+          changeset
+          |> Map.put(:action, :insert)
+          |> to_form()
+
+        {:noreply, assign(socket, :email_form, to_form)}
     end
   end
 

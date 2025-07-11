@@ -61,7 +61,7 @@ defmodule BankWeb.UserResetPasswordLive do
   @impl LiveView
   def handle_event("reset_password", %{"user" => user_params}, socket) do
     case Users.reset_user_password(socket.assigns.user, user_params) do
-      {:ok, _} ->
+      {:ok, _user} ->
         {:noreply,
          socket
          |> put_flash(:info, "Password reset successfully.")
