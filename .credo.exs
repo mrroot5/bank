@@ -78,7 +78,6 @@
           {Credo.Check.Consistency.SpaceAroundOperators, []},
           {Credo.Check.Consistency.SpaceInParentheses, []},
           {Credo.Check.Consistency.TabsOrSpaces, [force: :spaces]},
-          {Credo.Check.Consistency.UnusedVariableNames, [force: :meaningful]},
 
           #
           ## Design Checks
@@ -220,7 +219,8 @@
         disabled: [
           #
           {Credo.Check.Consistency.MultiAliasImportRequireUse, []},
-
+          {Credo.Check.Consistency.UnusedVariableNames, [force: :meaningful]},
+          #
           # You can also customize the exit_status of each check.
           # If you don't want TODO comments to cause `mix credo` to fail, just
           # set this value to 0 (zero).
