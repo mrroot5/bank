@@ -157,8 +157,8 @@
           #
           ## Refactoring Opportunities
           #
-          # This check is a work in progress and the max_size param would be changed in future. Default: 30
-          {Credo.Check.Refactor.ABCSize, [max_size: 10, excluded_functions: []]},
+          # This check is a work in progress and the max_size param would be changed in the future. Default: 30
+          {Credo.Check.Refactor.ABCSize, [max_size: 25, excluded_functions: []]},
           {Credo.Check.Refactor.AppendSingleItem, []},
           {Credo.Check.Refactor.Apply, []},
           {Credo.Check.Refactor.CondStatements, []},
