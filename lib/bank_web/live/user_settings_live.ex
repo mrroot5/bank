@@ -2,7 +2,9 @@ defmodule BankWeb.UserSettingsLive do
   use BankWeb, :live_view
 
   alias Bank.Users
+  alias Phoenix.LiveView
 
+  @impl LiveView
   def render(assigns) do
     ~H"""
     <.header class="text-center">
@@ -73,6 +75,7 @@ defmodule BankWeb.UserSettingsLive do
     """
   end
 
+  @impl LiveView
   def mount(%{"token" => token}, _session, socket) do
     socket =
       case Users.update_user_email(socket.assigns.current_user, token) do
@@ -103,6 +106,7 @@ defmodule BankWeb.UserSettingsLive do
     {:ok, socket}
   end
 
+  @impl LiveView
   def handle_event("validate_email", params, socket) do
     %{"current_password" => password, "user" => user_params} = params
 
@@ -128,9 +132,16 @@ defmodule BankWeb.UserSettingsLive do
         )
 
         info = "A link to confirm your email change has been sent to the new address."
-        {:noreply, socket |> put_flash(:info, info) |> assign(email_form_current_password: nil)}
+
+        {
+          :noreply,
+          socket
+          |> put_flash(:info, info)
+          |> assign(email_form_current_password: nil)
+        }
 
       {:error, changeset} ->
+        # FIXME complex
         {:noreply, assign(socket, :email_form, to_form(Map.put(changeset, :action, :insert)))}
     end
   end

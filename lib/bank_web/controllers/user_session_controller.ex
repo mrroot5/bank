@@ -3,7 +3,9 @@ defmodule BankWeb.UserSessionController do
 
   alias Bank.Users
   alias BankWeb.UserAuth
+  alias Plug.Conn
 
+  @spec create(Conn.t(), map()) :: Conn.t()
   def create(conn, %{"_action" => "registered"} = params) do
     create(conn, params, "Account created successfully!")
   end
@@ -18,6 +20,14 @@ defmodule BankWeb.UserSessionController do
     create(conn, params, "Welcome back!")
   end
 
+  @spec delete(Conn.t(), map()) :: Conn.t()
+  def delete(conn, _params) do
+    conn
+    |> put_flash(:info, "Logged out successfully.")
+    |> UserAuth.log_out_user()
+  end
+
+  @spec create(Conn.t(), map(), binary()) :: Conn.t()
   defp create(conn, %{"user" => user_params}, info) do
     %{"email" => email, "password" => password} = user_params
 
@@ -32,11 +42,5 @@ defmodule BankWeb.UserSessionController do
       |> put_flash(:email, String.slice(email, 0, 160))
       |> redirect(to: ~p"/users/log_in")
     end
-  end
-
-  def delete(conn, _params) do
-    conn
-    |> put_flash(:info, "Logged out successfully.")
-    |> UserAuth.log_out_user()
   end
 end

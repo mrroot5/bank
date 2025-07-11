@@ -33,7 +33,9 @@ defmodule BankWeb.UserConfirmationInstructionsLiveTest do
     end
 
     test "does not send confirmation token if user is confirmed", %{conn: conn, user: user} do
-      Repo.update!(Users.User.confirm_changeset(user))
+      user
+      |> Users.User.confirm_changeset()
+      |> Repo.update!()
 
       {:ok, lv, _html} = live(conn, ~p"/users/confirm")
 

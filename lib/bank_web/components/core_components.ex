@@ -17,7 +17,9 @@ defmodule BankWeb.CoreComponents do
   use Phoenix.Component
   use Gettext, backend: BankWeb.Gettext
 
+  alias Phoenix.HTML.Form
   alias Phoenix.LiveView.JS
+  alias Phoenix.LiveView.Rendered
 
   @doc """
   Renders a modal.
@@ -41,6 +43,7 @@ defmodule BankWeb.CoreComponents do
   attr :on_cancel, JS, default: %JS{}
   slot :inner_block, required: true
 
+  @spec modal(map()) :: Rendered.t()
   def modal(assigns) do
     ~H"""
     <div
@@ -105,6 +108,7 @@ defmodule BankWeb.CoreComponents do
 
   slot :inner_block, doc: "the optional inner block that renders the flash message"
 
+  @spec flash(map()) :: Rendered.t()
   def flash(assigns) do
     assigns = assign_new(assigns, :id, fn -> "flash-#{assigns.kind}" end)
 
@@ -144,6 +148,7 @@ defmodule BankWeb.CoreComponents do
   attr :flash, :map, required: true, doc: "the map of flash messages"
   attr :id, :string, default: "flash-group", doc: "the optional id of flash container"
 
+  @spec flash_group(map()) :: Rendered.t()
   def flash_group(assigns) do
     ~H"""
     <div id={@id}>
@@ -199,6 +204,7 @@ defmodule BankWeb.CoreComponents do
   slot :inner_block, required: true
   slot :actions, doc: "the slot for form actions, such as a submit button"
 
+  @spec simple_form(map()) :: Rendered.t()
   def simple_form(assigns) do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
@@ -226,6 +232,7 @@ defmodule BankWeb.CoreComponents do
 
   slot :inner_block, required: true
 
+  @spec button(map()) :: Rendered.t()
   def button(assigns) do
     ~H"""
     <button
@@ -291,6 +298,7 @@ defmodule BankWeb.CoreComponents do
     include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
                 multiple pattern placeholder readonly required rows size step)
 
+  @spec input(map()) :: Rendered.t()
   def input(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
     errors = if Phoenix.Component.used_input?(field), do: field.errors, else: []
 
@@ -305,7 +313,7 @@ defmodule BankWeb.CoreComponents do
   def input(%{type: "checkbox"} = assigns) do
     assigns =
       assign_new(assigns, :checked, fn ->
-        Phoenix.HTML.Form.normalize_value("checkbox", assigns[:value])
+        Form.normalize_value("checkbox", assigns[:value])
       end)
 
     ~H"""
@@ -340,7 +348,7 @@ defmodule BankWeb.CoreComponents do
         {@rest}
       >
         <option :if={@prompt} value="">{@prompt}</option>
-        {Phoenix.HTML.Form.options_for_select(@options, @value)}
+        {Form.options_for_select(@options, @value)}
       </select>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
@@ -360,7 +368,7 @@ defmodule BankWeb.CoreComponents do
           @errors != [] && "border-rose-400 focus:border-rose-400"
         ]}
         {@rest}
-      >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
+      >{Form.normalize_value("textarea", @value)}</textarea>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -375,7 +383,7 @@ defmodule BankWeb.CoreComponents do
         type={@type}
         name={@name}
         id={@id}
-        value={Phoenix.HTML.Form.normalize_value(@type, @value)}
+        value={Form.normalize_value(@type, @value)}
         class={[
           "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6",
           @errors == [] && "border-zinc-300 focus:border-zinc-400",
@@ -394,6 +402,7 @@ defmodule BankWeb.CoreComponents do
   attr :for, :string, default: nil
   slot :inner_block, required: true
 
+  @spec label(map()) :: Rendered.t()
   def label(assigns) do
     ~H"""
     <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800">
@@ -407,6 +416,7 @@ defmodule BankWeb.CoreComponents do
   """
   slot :inner_block, required: true
 
+  @spec error(map()) :: Rendered.t()
   def error(assigns) do
     ~H"""
     <p class="mt-3 flex gap-3 text-sm leading-6 text-rose-600">
@@ -425,6 +435,7 @@ defmodule BankWeb.CoreComponents do
   slot :subtitle
   slot :actions
 
+  @spec header(map()) :: Rendered.t()
   def header(assigns) do
     ~H"""
     <header class={[@actions != [] && "flex items-center justify-between gap-6", @class]}>
@@ -466,6 +477,7 @@ defmodule BankWeb.CoreComponents do
 
   slot :action, doc: "the slot for showing user actions in the last table column"
 
+  @spec table(map()) :: Rendered.t()
   def table(assigns) do
     assigns =
       with %{rows: %Phoenix.LiveView.LiveStream{}} <- assigns do
@@ -533,6 +545,7 @@ defmodule BankWeb.CoreComponents do
     attr :title, :string, required: true
   end
 
+  @spec list(map()) :: Rendered.t()
   def list(assigns) do
     ~H"""
     <div class="mt-14">
@@ -555,7 +568,7 @@ defmodule BankWeb.CoreComponents do
   """
   attr :navigate, :any, required: true
   slot :inner_block, required: true
-
+  @spec back(map()) :: Rendered.t()
   def back(assigns) do
     ~H"""
     <div class="mt-16">
@@ -590,7 +603,7 @@ defmodule BankWeb.CoreComponents do
   """
   attr :name, :string, required: true
   attr :class, :string, default: nil
-
+  @spec icon(map()) :: Rendered.t()
   def icon(%{name: "hero-" <> _} = assigns) do
     ~H"""
     <span class={[@name, @class]} />
@@ -598,7 +611,7 @@ defmodule BankWeb.CoreComponents do
   end
 
   ## JS Commands
-
+  @spec show(JS.t(), String.t()) :: JS.t()
   def show(js \\ %JS{}, selector) do
     JS.show(js,
       to: selector,
@@ -610,6 +623,7 @@ defmodule BankWeb.CoreComponents do
     )
   end
 
+  @spec hide(JS.t(), String.t()) :: JS.t()
   def hide(js \\ %JS{}, selector) do
     JS.hide(js,
       to: selector,
@@ -621,6 +635,7 @@ defmodule BankWeb.CoreComponents do
     )
   end
 
+  @spec show_modal(JS.t(), String.t()) :: JS.t()
   def show_modal(js \\ %JS{}, id) when is_binary(id) do
     js
     |> JS.show(to: "##{id}")
@@ -634,6 +649,7 @@ defmodule BankWeb.CoreComponents do
     |> JS.focus_first(to: "##{id}-content")
   end
 
+  @spec hide_modal(JS.t(), String.t()) :: JS.t()
   def hide_modal(js \\ %JS{}, id) do
     js
     |> JS.hide(
@@ -649,6 +665,7 @@ defmodule BankWeb.CoreComponents do
   @doc """
   Translates an error message using gettext.
   """
+  @spec translate_error({String.t(), keyword()}) :: binary
   def translate_error({msg, opts}) do
     # When using gettext, we typically pass the strings we want
     # to translate as a static argument:
@@ -670,6 +687,7 @@ defmodule BankWeb.CoreComponents do
   @doc """
   Translates the errors for a field from a keyword list of errors.
   """
+  @spec translate_errors(list(), term()) :: binary()
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
   end

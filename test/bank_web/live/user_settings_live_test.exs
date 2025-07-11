@@ -1,9 +1,10 @@
 defmodule BankWeb.UserSettingsLiveTest do
   use BankWeb.ConnCase, async: true
 
-  alias Bank.Users
   import Phoenix.LiveViewTest
   import Bank.UsersFixtures
+
+  alias Bank.Users
 
   describe "Settings page" do
     test "renders settings page", %{conn: conn} do

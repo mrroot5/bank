@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+jobs:
+  ci:
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+    name: CI
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        elixir: [1.18.4]
+        otp: [28.0.1]
+    env:
+      MIX_ENV: dev
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Elixir ${{ matrix.elixir }} & OTP ${{ matrix.otp }}
+        uses: erlef/setup-elixir@v1
+        with:
+          elixir-version: ${{matrix.elixir}}
+          otp-version: ${{matrix.otp}}
+
+      - name: Restore compile cache
+        uses: actions/cache@v4
+        with:
+          path: _build/test
+          key:  ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-build-cache
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-build-cache
+            ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: deps
+          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-deps-cache
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-deps-cache
+            ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
+
+      - name: Install deps & compile
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+          mix deps.get
+          mix compile --warnings-as-errors
+
+      - name: Run credo
+        run: mix credo --strict
+        env:
+          MIX_ENV: dev
+          PG_HOST: localhost
+
+      - name: Run dialyzer
+        run: mix dialyzer --format github
+        env:
+          MIX_ENV: dev
+          PG_HOST: localhost

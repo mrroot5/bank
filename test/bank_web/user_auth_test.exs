@@ -1,11 +1,11 @@
 defmodule BankWeb.UserAuthTest do
   use BankWeb.ConnCase, async: true
 
+  import Bank.UsersFixtures
+
   alias Bank.Users
   alias BankWeb.UserAuth
   alias Phoenix.LiveView
-
-  import Bank.UsersFixtures
 
   @remember_me_cookie "_bank_web_user_remember_me"
 
@@ -28,17 +28,29 @@ defmodule BankWeb.UserAuthTest do
     end
 
     test "clears everything previously stored in the session", %{conn: conn, user: user} do
-      conn = conn |> put_session(:to_be_removed, "value") |> UserAuth.log_in_user(user)
+      conn =
+        conn
+        |> put_session(:to_be_removed, "value")
+        |> UserAuth.log_in_user(user)
+
       refute get_session(conn, :to_be_removed)
     end
 
     test "redirects to the configured path", %{conn: conn, user: user} do
-      conn = conn |> put_session(:user_return_to, "/hello") |> UserAuth.log_in_user(user)
+      conn =
+        conn
+        |> put_session(:user_return_to, "/hello")
+        |> UserAuth.log_in_user(user)
+
       assert redirected_to(conn) == "/hello"
     end
 
     test "writes a cookie if remember_me is configured", %{conn: conn, user: user} do
-      conn = conn |> fetch_cookies() |> UserAuth.log_in_user(user, %{"remember_me" => "true"})
+      conn =
+        conn
+        |> fetch_cookies()
+        |> UserAuth.log_in_user(user, %{"remember_me" => "true"})
+
       assert get_session(conn, :user_token) == conn.cookies[@remember_me_cookie]
 
       assert %{value: signed_token, max_age: max_age} = conn.resp_cookies[@remember_me_cookie]
@@ -49,7 +61,7 @@ defmodule BankWeb.UserAuthTest do
 
   describe "logout_user/1" do
     test "erases session and cookies", %{conn: conn, user: user} do
-      user_token = Users.generate_user_session_token(user)
+      user_token = Users.generate_user_session_token!(user)
 
       conn =
         conn
@@ -77,7 +89,11 @@ defmodule BankWeb.UserAuthTest do
     end
 
     test "works even if user is already logged out", %{conn: conn} do
-      conn = conn |> fetch_cookies() |> UserAuth.log_out_user()
+      conn =
+        conn
+        |> fetch_cookies()
+        |> UserAuth.log_out_user()
+
       refute get_session(conn, :user_token)
       assert %{max_age: 0} = conn.resp_cookies[@remember_me_cookie]
       assert redirected_to(conn) == ~p"/"
@@ -86,14 +102,21 @@ defmodule BankWeb.UserAuthTest do
 
   describe "fetch_current_user/2" do
     test "authenticates user from session", %{conn: conn, user: user} do
-      user_token = Users.generate_user_session_token(user)
-      conn = conn |> put_session(:user_token, user_token) |> UserAuth.fetch_current_user([])
+      user_token = Users.generate_user_session_token!(user)
+
+      conn =
+        conn
+        |> put_session(:user_token, user_token)
+        |> UserAuth.fetch_current_user([])
+
       assert conn.assigns.current_user.id == user.id
     end
 
     test "authenticates user from cookies", %{conn: conn, user: user} do
       logged_in_conn =
-        conn |> fetch_cookies() |> UserAuth.log_in_user(user, %{"remember_me" => "true"})
+        conn
+        |> fetch_cookies()
+        |> UserAuth.log_in_user(user, %{"remember_me" => "true"})
 
       user_token = logged_in_conn.cookies[@remember_me_cookie]
       %{value: signed_token} = logged_in_conn.resp_cookies[@remember_me_cookie]
@@ -111,7 +134,7 @@ defmodule BankWeb.UserAuthTest do
     end
 
     test "does not authenticate if data is missing", %{conn: conn, user: user} do
-      _ = Users.generate_user_session_token(user)
+      _ = Users.generate_user_session_token!(user)
       conn = UserAuth.fetch_current_user(conn, [])
       refute get_session(conn, :user_token)
       refute conn.assigns.current_user
@@ -120,8 +143,12 @@ defmodule BankWeb.UserAuthTest do
 
   describe "on_mount :mount_current_user" do
     test "assigns current_user based on a valid user_token", %{conn: conn, user: user} do
-      user_token = Users.generate_user_session_token(user)
-      session = conn |> put_session(:user_token, user_token) |> get_session()
+      user_token = Users.generate_user_session_token!(user)
+
+      session =
+        conn
+        |> put_session(:user_token, user_token)
+        |> get_session()
 
       {:cont, updated_socket} =
         UserAuth.on_mount(:mount_current_user, %{}, session, %LiveView.Socket{})
@@ -131,7 +158,11 @@ defmodule BankWeb.UserAuthTest do
 
     test "assigns nil to current_user assign if there isn't a valid user_token", %{conn: conn} do
       user_token = "invalid_token"
-      session = conn |> put_session(:user_token, user_token) |> get_session()
+
+      session =
+        conn
+        |> put_session(:user_token, user_token)
+        |> get_session()
 
       {:cont, updated_socket} =
         UserAuth.on_mount(:mount_current_user, %{}, session, %LiveView.Socket{})
@@ -151,8 +182,12 @@ defmodule BankWeb.UserAuthTest do
 
   describe "on_mount :ensure_authenticated" do
     test "authenticates current_user based on a valid user_token", %{conn: conn, user: user} do
-      user_token = Users.generate_user_session_token(user)
-      session = conn |> put_session(:user_token, user_token) |> get_session()
+      user_token = Users.generate_user_session_token!(user)
+
+      session =
+        conn
+        |> put_session(:user_token, user_token)
+        |> get_session()
 
       {:cont, updated_socket} =
         UserAuth.on_mount(:ensure_authenticated, %{}, session, %LiveView.Socket{})
@@ -162,7 +197,11 @@ defmodule BankWeb.UserAuthTest do
 
     test "redirects to login page if there isn't a valid user_token", %{conn: conn} do
       user_token = "invalid_token"
-      session = conn |> put_session(:user_token, user_token) |> get_session()
+
+      session =
+        conn
+        |> put_session(:user_token, user_token)
+        |> get_session()
 
       socket = %LiveView.Socket{
         endpoint: BankWeb.Endpoint,
@@ -188,8 +227,12 @@ defmodule BankWeb.UserAuthTest do
 
   describe "on_mount :redirect_if_user_is_authenticated" do
     test "redirects if there is an authenticated  user ", %{conn: conn, user: user} do
-      user_token = Users.generate_user_session_token(user)
-      session = conn |> put_session(:user_token, user_token) |> get_session()
+      user_token = Users.generate_user_session_token!(user)
+
+      session =
+        conn
+        |> put_session(:user_token, user_token)
+        |> get_session()
 
       assert {:halt, _updated_socket} =
                UserAuth.on_mount(
@@ -215,7 +258,11 @@ defmodule BankWeb.UserAuthTest do
 
   describe "redirect_if_user_is_authenticated/2" do
     test "redirects if user is authenticated", %{conn: conn, user: user} do
-      conn = conn |> assign(:current_user, user) |> UserAuth.redirect_if_user_is_authenticated([])
+      conn =
+        conn
+        |> assign(:current_user, user)
+        |> UserAuth.redirect_if_user_is_authenticated([])
+
       assert conn.halted
       assert redirected_to(conn) == ~p"/"
     end
@@ -229,7 +276,11 @@ defmodule BankWeb.UserAuthTest do
 
   describe "require_authenticated_user/2" do
     test "redirects if user is not authenticated", %{conn: conn} do
-      conn = conn |> fetch_flash() |> UserAuth.require_authenticated_user([])
+      conn =
+        conn
+        |> fetch_flash()
+        |> UserAuth.require_authenticated_user([])
+
       assert conn.halted
 
       assert redirected_to(conn) == ~p"/users/log_in"
@@ -265,7 +316,11 @@ defmodule BankWeb.UserAuthTest do
     end
 
     test "does not redirect if user is authenticated", %{conn: conn, user: user} do
-      conn = conn |> assign(:current_user, user) |> UserAuth.require_authenticated_user([])
+      conn =
+        conn
+        |> assign(:current_user, user)
+        |> UserAuth.require_authenticated_user([])
+
       refute conn.halted
       refute conn.status
     end
