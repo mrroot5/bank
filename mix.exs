@@ -37,7 +37,7 @@ defmodule Bank.MixProject do
       {:bandit, "~> 1.5"},
       {:credo, "~> 1.7", only: :dev, runtime: false},
       {:decimal, "~> 2.0"},
-      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: :dev, runtime: false},
       {:dns_cluster, "~> 0.2.0"},
       {:ecto_sql, "~> 3.10"},
       {:esbuild, "~> 0.8", runtime: get_mix_env() == :dev},
@@ -93,7 +93,9 @@ defmodule Bank.MixProject do
 
   defp dialyzer do
     [
-      plt_add_apps: [:mix, :ex_unit],
+      plt_add_apps: [:mix],
+      # Prevent xmerl warnings that would be added on a future otp version > 28
+      plt_ignore_apps: [:xmerl],
       ignore_warnings: ".dialyzer_ignore.exs"
     ]
   end
