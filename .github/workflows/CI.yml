@@ -55,4 +55,8 @@ jobs:
         run: mix credo --strict
         env:
           MIX_ENV: dev
-          PG_HOST: localhost
+
+      - name: Run dialyzer
+        run: mix dialyzer --quiet-with-result --format github
+        env:
+          MIX_ENV: dev
