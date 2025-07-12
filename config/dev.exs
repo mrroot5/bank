@@ -4,7 +4,7 @@ import Config
 config :bank, Bank.Repo,
   username: "bank",
   password: "HelloPostgres!",
-  hostname: "postgres",
+  hostname: System.get_env("PG_HOST") || "postgres",
   database: "bank_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,

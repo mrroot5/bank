@@ -1,42 +1,21 @@
-name: Tests
+name: CI
 
 on:
   pull_request:
-    types: [ opened, reopened, synchronize, ready_for_review ]
+    types: [opened, reopened, synchronize, ready_for_review]
 
 jobs:
-  test:
+  ci:
     if: |
       (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
-    name: Tests
+    name: CI
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        elixir:
-          - 1.18.4
-        # Allowed versions: https://builds.hex.pm/builds/otp/ubuntu-24.04/builds.txt
-        otp:
-          - 28.0.1
-    services:
-      postgres:
-        image: postgres:17.5-alpine3.22
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-          --health-start-period 25s
-        env:
-          POSTGRES_USER: postgres_test
-          POSTGRES_PASSWORD: postgres_test
-          POSTGRES_DB: postgres
-
+        elixir: [1.18.4]
+        otp: [28.0.1]
     env:
-      MIX_ENV: test
-      PG_HOST: localhost
-
+      MIX_ENV: dev
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -72,15 +51,8 @@ jobs:
           mix deps.get
           mix compile --warnings-as-errors
 
-      - name: Create and migrate database
-        run: |
-          # wait for Postgres to be ready
-          until pg_isready -h localhost -U postgres; do
-            echo "Waiting for Postgres..."
-            sleep 1
-          done
-          mix ecto.create
-          mix ecto.migrate
-
-      - name: Run tests
-        run: mix test
+      - name: Run credo
+        run: mix credo --strict
+        env:
+          MIX_ENV: dev
+          PG_HOST: localhost

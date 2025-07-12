@@ -4,8 +4,8 @@ defmodule BankWeb.UserConfirmationLiveTest do
   import Phoenix.LiveViewTest
   import Bank.UsersFixtures
 
-  alias Bank.Users
   alias Bank.Repo
+  alias Bank.Users
 
   setup do
     %{user: user_fixture()}
@@ -56,8 +56,10 @@ defmodule BankWeb.UserConfirmationLiveTest do
 
       # when logged in
       conn =
-        build_conn()
-        |> log_in_user(user)
+        log_in_user(
+          build_conn(),
+          user
+        )
 
       {:ok, lv, _html} = live(conn, ~p"/users/confirm/#{token}")
 

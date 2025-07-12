@@ -1,6 +1,9 @@
 defmodule BankWeb.UserLoginLive do
   use BankWeb, :live_view
 
+  alias Phoenix.LiveView
+
+  @impl LiveView
   def render(assigns) do
     ~H"""
     <div class="mx-auto max-w-sm">
@@ -35,6 +38,7 @@ defmodule BankWeb.UserLoginLive do
     """
   end
 
+  @impl LiveView
   def mount(_params, _session, socket) do
     email = Phoenix.Flash.get(socket.assigns.flash, :email)
     form = to_form(%{"email" => email}, as: "user")

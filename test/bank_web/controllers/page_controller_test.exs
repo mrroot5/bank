@@ -1,5 +1,5 @@
 defmodule BankWeb.PageControllerTest do
-  use BankWeb.ConnCase
+  use BankWeb.ConnCase, async: true
 
   test "GET /", %{conn: conn} do
     conn = get(conn, ~p"/")

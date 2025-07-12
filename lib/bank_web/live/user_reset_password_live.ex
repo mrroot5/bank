@@ -2,7 +2,9 @@ defmodule BankWeb.UserResetPasswordLive do
   use BankWeb, :live_view
 
   alias Bank.Users
+  alias Phoenix.LiveView
 
+  @impl LiveView
   def render(assigns) do
     ~H"""
     <div class="mx-auto max-w-sm">
@@ -38,6 +40,7 @@ defmodule BankWeb.UserResetPasswordLive do
     """
   end
 
+  @impl LiveView
   def mount(params, _session, socket) do
     socket = assign_user_and_token(socket, params)
 
@@ -55,9 +58,10 @@ defmodule BankWeb.UserResetPasswordLive do
 
   # Do not log in the user after reset password to avoid a
   # leaked token giving the user access to the account.
+  @impl LiveView
   def handle_event("reset_password", %{"user" => user_params}, socket) do
     case Users.reset_user_password(socket.assigns.user, user_params) do
-      {:ok, _} ->
+      {:ok, _user} ->
         {:noreply,
          socket
          |> put_flash(:info, "Password reset successfully.")

@@ -1,10 +1,11 @@
 defmodule Bank.UsersTest do
-  use Bank.DataCase
-
-  alias Bank.Users
+  use Bank.DataCase, async: true
 
   import Bank.UsersFixtures
-  alias Bank.Users.{User, UserToken}
+
+  alias Bank.Users
+  alias Bank.Users.User
+  alias Bank.Users.UserToken
 
   describe "get_user_by_email/1" do
     test "does not return the user if the email does not exist" do
@@ -86,7 +87,12 @@ defmodule Bank.UsersTest do
 
     test "registers users with a hashed password" do
       email = unique_user_email()
-      {:ok, user} = Users.register_user(valid_user_attributes(email: email))
+
+      {:ok, user} =
+        [email: email]
+        |> valid_user_attributes()
+        |> Users.register_user()
+
       assert user.email == email
       assert is_binary(user.hashed_password)
       assert is_nil(user.confirmed_at)
@@ -299,7 +305,7 @@ defmodule Bank.UsersTest do
     end
 
     test "deletes all tokens for the given user", %{user: user} do
-      _ = Users.generate_user_session_token(user)
+      _ = Users.generate_user_session_token!(user)
 
       {:ok, _} =
         Users.update_user_password(user, valid_user_password(), %{
@@ -310,13 +316,13 @@ defmodule Bank.UsersTest do
     end
   end
 
-  describe "generate_user_session_token/1" do
+  describe "generate_user_session_token!/1" do
     setup do
       %{user: user_fixture()}
     end
 
     test "generates a token", %{user: user} do
-      token = Users.generate_user_session_token(user)
+      token = Users.generate_user_session_token!(user)
       assert user_token = Repo.get_by(UserToken, token: token)
       assert user_token.context == "session"
 
@@ -334,7 +340,7 @@ defmodule Bank.UsersTest do
   describe "get_user_by_session_token/1" do
     setup do
       user = user_fixture()
-      token = Users.generate_user_session_token(user)
+      token = Users.generate_user_session_token!(user)
       %{user: user, token: token}
     end
 
@@ -356,7 +362,7 @@ defmodule Bank.UsersTest do
   describe "delete_user_session_token/1" do
     test "deletes the token" do
       user = user_fixture()
-      token = Users.generate_user_session_token(user)
+      token = Users.generate_user_session_token!(user)
       assert Users.delete_user_session_token(token) == :ok
       refute Users.get_user_by_session_token(token)
     end
@@ -494,7 +500,7 @@ defmodule Bank.UsersTest do
     end
 
     test "deletes all tokens for the given user", %{user: user} do
-      _ = Users.generate_user_session_token(user)
+      _ = Users.generate_user_session_token!(user)
       {:ok, _} = Users.reset_user_password(user, %{password: "new valid password"})
       refute Repo.get_by(UserToken, user_id: user.id)
     end
