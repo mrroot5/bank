@@ -2,7 +2,9 @@ defmodule BankWeb.UserForgotPasswordLive do
   use BankWeb, :live_view
 
   alias Bank.Users
+  alias Phoenix.LiveView
 
+  @impl LiveView
   def render(assigns) do
     ~H"""
     <div class="mx-auto max-w-sm">
@@ -27,10 +29,12 @@ defmodule BankWeb.UserForgotPasswordLive do
     """
   end
 
+  @impl LiveView
   def mount(_params, _session, socket) do
     {:ok, assign(socket, form: to_form(%{}, as: "user"))}
   end
 
+  @impl LiveView
   def handle_event("send_email", %{"user" => %{"email" => email}}, socket) do
     if user = Users.get_user_by_email(email) do
       Users.deliver_user_reset_password_instructions(

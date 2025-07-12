@@ -3,7 +3,9 @@ defmodule BankWeb.UserRegistrationLive do
 
   alias Bank.Users
   alias Bank.Users.User
+  alias Phoenix.LiveView
 
+  @impl LiveView
   def render(assigns) do
     ~H"""
     <div class="mx-auto max-w-sm">
@@ -42,6 +44,7 @@ defmodule BankWeb.UserRegistrationLive do
     """
   end
 
+  @impl LiveView
   def mount(_params, _session, socket) do
     changeset = Users.change_user_registration(%User{})
 
@@ -53,6 +56,7 @@ defmodule BankWeb.UserRegistrationLive do
     {:ok, socket, temporary_assigns: [form: nil]}
   end
 
+  @impl LiveView
   def handle_event("save", %{"user" => user_params}, socket) do
     case Users.register_user(user_params) do
       {:ok, user} ->
@@ -63,10 +67,21 @@ defmodule BankWeb.UserRegistrationLive do
           )
 
         changeset = Users.change_user_registration(user)
-        {:noreply, socket |> assign(trigger_submit: true) |> assign_form(changeset)}
+
+        {
+          :noreply,
+          socket
+          |> assign(trigger_submit: true)
+          |> assign_form(changeset)
+        }
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, socket |> assign(check_errors: true) |> assign_form(changeset)}
+        {
+          :noreply,
+          socket
+          |> assign(check_errors: true)
+          |> assign_form(changeset)
+        }
     end
   end
 

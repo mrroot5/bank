@@ -1,12 +1,10 @@
 defmodule BankWeb.Telemetry do
+  @moduledoc false
+
   use Supervisor
   import Telemetry.Metrics
 
-  def start_link(arg) do
-    Supervisor.start_link(__MODULE__, arg, name: __MODULE__)
-  end
-
-  @impl true
+  @impl Supervisor
   def init(_arg) do
     children = [
       # Telemetry poller will execute the given period measurements
@@ -19,6 +17,12 @@ defmodule BankWeb.Telemetry do
     Supervisor.init(children, strategy: :one_for_one)
   end
 
+  @spec start_link(term()) :: :ignore | {:error, term()} | {:ok, pid()}
+  def start_link(arg) do
+    Supervisor.start_link(__MODULE__, arg, name: __MODULE__)
+  end
+
+  @spec metrics :: term()
   def metrics do
     [
       # Phoenix Metrics
@@ -83,6 +87,7 @@ defmodule BankWeb.Telemetry do
     ]
   end
 
+  @spec periodic_measurements :: list()
   defp periodic_measurements do
     [
       # A module, function and arguments to be invoked periodically.

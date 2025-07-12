@@ -1,5 +1,9 @@
 FROM amd64/elixir:1.18.4-otp-28-slim
 
+# Set Locale
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+
 # Install required packages
 ENV DEBIAN_FRONTEND=noninteractive
 

@@ -2,7 +2,9 @@ defmodule BankWeb.UserConfirmationLive do
   use BankWeb, :live_view
 
   alias Bank.Users
+  alias Phoenix.LiveView
 
+  @impl LiveView
   def render(%{live_action: :edit} = assigns) do
     ~H"""
     <div class="mx-auto max-w-sm">
@@ -23,6 +25,7 @@ defmodule BankWeb.UserConfirmationLive do
     """
   end
 
+  @impl LiveView
   def mount(%{"token" => token}, _session, socket) do
     form = to_form(%{"token" => token}, as: "user")
     {:ok, assign(socket, form: form), temporary_assigns: [form: nil]}
@@ -30,6 +33,7 @@ defmodule BankWeb.UserConfirmationLive do
 
   # Do not log in the user after confirmation to avoid a
   # leaked token giving the user access to the account.
+  @impl LiveView
   def handle_event("confirm_account", %{"user" => %{"token" => token}}, socket) do
     case Users.confirm_user(token) do
       {:ok, _} ->

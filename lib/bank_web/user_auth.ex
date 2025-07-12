@@ -1,10 +1,15 @@
 defmodule BankWeb.UserAuth do
+  @moduledoc """
+  Authentication.
+  Generated with Phoenix
+  """
   use BankWeb, :verified_routes
 
   import Plug.Conn
   import Phoenix.Controller
 
   alias Bank.Users
+  alias Phoenix.LiveView.Socket
 
   # Make the remember me cookie valid for 60 days.
   # If you want bump or reduce this value, also change
@@ -25,8 +30,9 @@ defmodule BankWeb.UserAuth do
   disconnected on log out. The line can be safely removed
   if you are not using LiveView.
   """
+  @spec log_in_user(Socket.t(), map(), map()) :: Socket.t()
   def log_in_user(conn, user, params \\ %{}) do
-    token = Users.generate_user_session_token(user)
+    token = Users.generate_user_session_token!(user)
     user_return_to = get_session(conn, :user_return_to)
 
     conn
@@ -36,42 +42,12 @@ defmodule BankWeb.UserAuth do
     |> redirect(to: user_return_to || signed_in_path(conn))
   end
 
-  defp maybe_write_remember_me_cookie(conn, token, %{"remember_me" => "true"}) do
-    put_resp_cookie(conn, @remember_me_cookie, token, @remember_me_options)
-  end
-
-  defp maybe_write_remember_me_cookie(conn, _token, _params) do
-    conn
-  end
-
-  # This function renews the session ID and erases the whole
-  # session to avoid fixation attacks. If there is any data
-  # in the session you may want to preserve after log in/log out,
-  # you must explicitly fetch the session data before clearing
-  # and then immediately set it after clearing, for example:
-  #
-  #     defp renew_session(conn) do
-  #       preferred_locale = get_session(conn, :preferred_locale)
-  #
-  #       conn
-  #       |> configure_session(renew: true)
-  #       |> clear_session()
-  #       |> put_session(:preferred_locale, preferred_locale)
-  #     end
-  #
-  defp renew_session(conn) do
-    delete_csrf_token()
-
-    conn
-    |> configure_session(renew: true)
-    |> clear_session()
-  end
-
   @doc """
   Logs the user out.
 
   It clears all session data for safety. See renew_session.
   """
+  @spec log_out_user(Socket.t()) :: Socket.t()
   def log_out_user(conn) do
     user_token = get_session(conn, :user_token)
     user_token && Users.delete_user_session_token(user_token)
@@ -90,24 +66,11 @@ defmodule BankWeb.UserAuth do
   Authenticates the user by looking into the session
   and remember me token.
   """
+  @spec fetch_current_user(Socket.t(), keyword()) :: Socket.t()
   def fetch_current_user(conn, _opts) do
     {user_token, conn} = ensure_user_token(conn)
     user = user_token && Users.get_user_by_session_token(user_token)
     assign(conn, :current_user, user)
-  end
-
-  defp ensure_user_token(conn) do
-    if token = get_session(conn, :user_token) do
-      {token, conn}
-    else
-      conn = fetch_cookies(conn, signed: [@remember_me_cookie])
-
-      if token = conn.cookies[@remember_me_cookie] do
-        {token, put_token_in_session(conn, token)}
-      else
-        {nil, conn}
-      end
-    end
   end
 
   @doc """
@@ -145,6 +108,7 @@ defmodule BankWeb.UserAuth do
         live "/profile", ProfileLive, :index
       end
   """
+  @spec on_mount(atom(), map(), map(), Socket.t()) :: {:cont | :halt, Socket.t()}
   def on_mount(:mount_current_user, _params, session, socket) do
     {:cont, mount_current_user(socket, session)}
   end
@@ -174,17 +138,10 @@ defmodule BankWeb.UserAuth do
     end
   end
 
-  defp mount_current_user(socket, session) do
-    Phoenix.Component.assign_new(socket, :current_user, fn ->
-      if user_token = session["user_token"] do
-        Users.get_user_by_session_token(user_token)
-      end
-    end)
-  end
-
   @doc """
   Used for routes that require the user to not be authenticated.
   """
+  @spec redirect_if_user_is_authenticated(Socket.t(), keyword()) :: Socket.t()
   def redirect_if_user_is_authenticated(conn, _opts) do
     if conn.assigns[:current_user] do
       conn
@@ -201,6 +158,7 @@ defmodule BankWeb.UserAuth do
   If you want to enforce the user email is confirmed before
   they use the application at all, here would be a good place.
   """
+  @spec require_authenticated_user(Socket.t(), map()) :: Socket.t()
   def require_authenticated_user(conn, _opts) do
     if conn.assigns[:current_user] do
       conn
@@ -213,17 +171,79 @@ defmodule BankWeb.UserAuth do
     end
   end
 
+  @spec maybe_write_remember_me_cookie(Socket.t(), binary(), map()) :: Socket.t()
+  defp maybe_write_remember_me_cookie(conn, token, %{"remember_me" => "true"}) do
+    put_resp_cookie(conn, @remember_me_cookie, token, @remember_me_options)
+  end
+
+  defp maybe_write_remember_me_cookie(conn, _token, _params) do
+    conn
+  end
+
+  # This function renews the session ID and erases the whole
+  # session to avoid fixation attacks. If there is any data
+  # in the session you may want to preserve after log in/log out,
+  # you must explicitly fetch the session data before clearing
+  # and then immediately set it after clearing, for example:
+  #
+  #     defp renew_session(conn) do
+  #       preferred_locale = get_session(conn, :preferred_locale)
+  #
+  #       conn
+  #       |> configure_session(renew: true)
+  #       |> clear_session()
+  #       |> put_session(:preferred_locale, preferred_locale)
+  #     end
+  #
+  @spec renew_session(Socket.t()) :: Socket.t()
+  defp renew_session(conn) do
+    delete_csrf_token()
+
+    conn
+    |> configure_session(renew: true)
+    |> clear_session()
+  end
+
+  @spec ensure_user_token(Socket.t()) :: {binary() | nil, Socket.t()}
+  defp ensure_user_token(conn) do
+    if token = get_session(conn, :user_token) do
+      {token, conn}
+    else
+      conn = fetch_cookies(conn, signed: [@remember_me_cookie])
+
+      if token = conn.cookies[@remember_me_cookie] do
+        {token, put_token_in_session(conn, token)}
+      else
+        {nil, conn}
+      end
+    end
+  end
+
+  @spec mount_current_user(Socket.t(), map()) :: Socket.t()
+  defp mount_current_user(socket, session) do
+    Phoenix.Component.assign_new(socket, :current_user, fn ->
+      if user_token = session["user_token"] do
+        Users.get_user_by_session_token(user_token)
+      end
+    end)
+  end
+
+  @spec put_token_in_session(Socket.t(), binary()) :: Socket.t()
   defp put_token_in_session(conn, token) do
     conn
     |> put_session(:user_token, token)
     |> put_session(:live_socket_id, "users_sessions:#{Base.url_encode64(token)}")
   end
 
+  @spec maybe_store_return_to(Socket.t()) :: Socket.t()
   defp maybe_store_return_to(%{method: "GET"} = conn) do
     put_session(conn, :user_return_to, current_path(conn))
   end
 
   defp maybe_store_return_to(conn), do: conn
 
+  # There is no typespec for ~p sigil so be careful. Internally it uses Phoenix.Params protocol where its type is term
+  # BUT the source code looks like it returns a string.
+  @spec signed_in_path(Socket.t()) :: binary()
   defp signed_in_path(_conn), do: ~p"/"
 end
