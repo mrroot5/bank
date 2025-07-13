@@ -17,6 +17,8 @@ defmodule BankWeb.ConnCase do
 
   use ExUnit.CaseTemplate
 
+  alias Plug.Conn
+
   using do
     quote do
       # The default endpoint for testing
@@ -44,7 +46,7 @@ defmodule BankWeb.ConnCase do
   It stores an updated connection and a registered user in the
   test context.
   """
-  @spec register_and_log_in_user(map()) :: map()
+  @spec register_and_log_in_user(map()) :: Conn.t()
   def register_and_log_in_user(%{conn: conn}) do
     user = Bank.UsersFixtures.user_fixture()
     %{conn: log_in_user(conn, user), user: user}
@@ -55,9 +57,9 @@ defmodule BankWeb.ConnCase do
 
   It returns an updated `conn`.
   """
-  @spec log_in_user(Plug.Conn.t(), Ecto.Schema.t()) :: map()
+  @spec log_in_user(Conn.t(), Ecto.Schema.t()) :: Conn.t()
   def log_in_user(conn, user) do
-    token = Bank.Users.generate_user_session_token!(user)
+    token = Bank.Users.generate_user_session_token(user)
 
     conn
     |> Phoenix.ConnTest.init_test_session(%{})

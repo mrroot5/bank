@@ -61,7 +61,7 @@ defmodule BankWeb.UserAuthTest do
 
   describe "logout_user/1" do
     test "erases session and cookies", %{conn: conn, user: user} do
-      user_token = Users.generate_user_session_token!(user)
+      user_token = Users.generate_user_session_token(user)
 
       conn =
         conn
@@ -102,7 +102,7 @@ defmodule BankWeb.UserAuthTest do
 
   describe "fetch_current_user/2" do
     test "authenticates user from session", %{conn: conn, user: user} do
-      user_token = Users.generate_user_session_token!(user)
+      user_token = Users.generate_user_session_token(user)
 
       conn =
         conn
@@ -134,7 +134,7 @@ defmodule BankWeb.UserAuthTest do
     end
 
     test "does not authenticate if data is missing", %{conn: conn, user: user} do
-      _ = Users.generate_user_session_token!(user)
+      _ = Users.generate_user_session_token(user)
       conn = UserAuth.fetch_current_user(conn, [])
       refute get_session(conn, :user_token)
       refute conn.assigns.current_user
@@ -143,7 +143,7 @@ defmodule BankWeb.UserAuthTest do
 
   describe "on_mount :mount_current_user" do
     test "assigns current_user based on a valid user_token", %{conn: conn, user: user} do
-      user_token = Users.generate_user_session_token!(user)
+      user_token = Users.generate_user_session_token(user)
 
       session =
         conn
@@ -182,7 +182,7 @@ defmodule BankWeb.UserAuthTest do
 
   describe "on_mount :ensure_authenticated" do
     test "authenticates current_user based on a valid user_token", %{conn: conn, user: user} do
-      user_token = Users.generate_user_session_token!(user)
+      user_token = Users.generate_user_session_token(user)
 
       session =
         conn
@@ -227,7 +227,7 @@ defmodule BankWeb.UserAuthTest do
 
   describe "on_mount :redirect_if_user_is_authenticated" do
     test "redirects if there is an authenticated  user ", %{conn: conn, user: user} do
-      user_token = Users.generate_user_session_token!(user)
+      user_token = Users.generate_user_session_token(user)
 
       session =
         conn

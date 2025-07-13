@@ -37,7 +37,7 @@ defmodule Bank.DataCase do
   @doc """
   Sets up the sandbox based on the test tags.
   """
-  @spec setup_sandbox(term()) :: :ok
+  @spec setup_sandbox(term()) :: term()
   def setup_sandbox(tags) do
     pid = Sandbox.start_owner!(Bank.Repo, shared: not tags[:async])
     on_exit(fn -> Sandbox.stop_owner(pid) end)
@@ -55,8 +55,10 @@ defmodule Bank.DataCase do
   def errors_on(changeset) do
     Ecto.Changeset.traverse_errors(changeset, fn {message, opts} ->
       Regex.replace(~r"%{(\w+)}", message, fn _, key ->
+        key_to_atom = String.to_existing_atom(key)
+
         opts
-        |> Keyword.get(String.to_existing_atom(key), key)
+        |> Keyword.get(key_to_atom, key)
         |> to_string()
       end)
     end)
