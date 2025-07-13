@@ -10,6 +10,7 @@ defmodule BankWeb.UserAuth do
 
   alias Bank.Users
   alias Phoenix.LiveView.Socket
+  alias Plug.Conn
 
   # Make the remember me cookie valid for 60 days.
   # If you want bump or reduce this value, also change
@@ -30,7 +31,7 @@ defmodule BankWeb.UserAuth do
   disconnected on log out. The line can be safely removed
   if you are not using LiveView.
   """
-  @spec log_in_user(Socket.t(), map(), map()) :: Socket.t()
+  @spec log_in_user(Conn.t(), Ecto.Schema.t(), map()) :: Conn.t()
   def log_in_user(conn, user, params \\ %{}) do
     token = Users.generate_user_session_token!(user)
     user_return_to = get_session(conn, :user_return_to)
@@ -47,7 +48,7 @@ defmodule BankWeb.UserAuth do
 
   It clears all session data for safety. See renew_session.
   """
-  @spec log_out_user(Socket.t()) :: Socket.t()
+  @spec log_out_user(Conn.t()) :: Conn.t()
   def log_out_user(conn) do
     user_token = get_session(conn, :user_token)
     user_token && Users.delete_user_session_token(user_token)
@@ -66,7 +67,7 @@ defmodule BankWeb.UserAuth do
   Authenticates the user by looking into the session
   and remember me token.
   """
-  @spec fetch_current_user(Socket.t(), keyword()) :: Socket.t()
+  @spec fetch_current_user(Conn.t(), keyword()) :: Conn.t()
   def fetch_current_user(conn, _opts) do
     {user_token, conn} = ensure_user_token(conn)
     user = user_token && Users.get_user_by_session_token(user_token)
@@ -141,7 +142,7 @@ defmodule BankWeb.UserAuth do
   @doc """
   Used for routes that require the user to not be authenticated.
   """
-  @spec redirect_if_user_is_authenticated(Socket.t(), keyword()) :: Socket.t()
+  @spec redirect_if_user_is_authenticated(Conn.t(), keyword()) :: Conn.t()
   def redirect_if_user_is_authenticated(conn, _opts) do
     if conn.assigns[:current_user] do
       conn
@@ -158,7 +159,7 @@ defmodule BankWeb.UserAuth do
   If you want to enforce the user email is confirmed before
   they use the application at all, here would be a good place.
   """
-  @spec require_authenticated_user(Socket.t(), map()) :: Socket.t()
+  @spec require_authenticated_user(Conn.t(), map()) :: Conn.t()
   def require_authenticated_user(conn, _opts) do
     if conn.assigns[:current_user] do
       conn
@@ -171,7 +172,7 @@ defmodule BankWeb.UserAuth do
     end
   end
 
-  @spec maybe_write_remember_me_cookie(Socket.t(), binary(), map()) :: Socket.t()
+  @spec maybe_write_remember_me_cookie(Conn.t(), binary(), map()) :: Conn.t()
   defp maybe_write_remember_me_cookie(conn, token, %{"remember_me" => "true"}) do
     put_resp_cookie(conn, @remember_me_cookie, token, @remember_me_options)
   end
@@ -195,7 +196,7 @@ defmodule BankWeb.UserAuth do
   #       |> put_session(:preferred_locale, preferred_locale)
   #     end
   #
-  @spec renew_session(Socket.t()) :: Socket.t()
+  @spec renew_session(Conn.t()) :: Conn.t()
   defp renew_session(conn) do
     delete_csrf_token()
 
@@ -204,7 +205,7 @@ defmodule BankWeb.UserAuth do
     |> clear_session()
   end
 
-  @spec ensure_user_token(Socket.t()) :: {binary() | nil, Socket.t()}
+  @spec ensure_user_token(Conn.t()) :: {binary() | nil, Conn.t()}
   defp ensure_user_token(conn) do
     if token = get_session(conn, :user_token) do
       {token, conn}
@@ -228,14 +229,14 @@ defmodule BankWeb.UserAuth do
     end)
   end
 
-  @spec put_token_in_session(Socket.t(), binary()) :: Socket.t()
+  @spec put_token_in_session(Conn.t(), binary()) :: Conn.t()
   defp put_token_in_session(conn, token) do
     conn
     |> put_session(:user_token, token)
     |> put_session(:live_socket_id, "users_sessions:#{Base.url_encode64(token)}")
   end
 
-  @spec maybe_store_return_to(Socket.t()) :: Socket.t()
+  @spec maybe_store_return_to(Conn.t()) :: Conn.t()
   defp maybe_store_return_to(%{method: "GET"} = conn) do
     put_session(conn, :user_return_to, current_path(conn))
   end
@@ -244,6 +245,6 @@ defmodule BankWeb.UserAuth do
 
   # There is no typespec for ~p sigil so be careful. Internally it uses Phoenix.Params protocol where its type is term
   # BUT the source code looks like it returns a string.
-  @spec signed_in_path(Socket.t()) :: binary()
+  @spec signed_in_path(Conn.t() | Socket.t()) :: binary()
   defp signed_in_path(_conn), do: ~p"/"
 end
