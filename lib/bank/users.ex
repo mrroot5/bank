@@ -231,8 +231,8 @@ defmodule Bank.Users do
   @doc """
   Generates a session token.
   """
-  @spec generate_user_session_token!(Ecto.Schema.t()) :: binary()
-  def generate_user_session_token!(user) do
+  @spec generate_user_session_token(Ecto.Schema.t()) :: binary()
+  def generate_user_session_token(user) do
     {token, user_token} = UserToken.build_session_token(user)
     Repo.insert!(user_token)
     token

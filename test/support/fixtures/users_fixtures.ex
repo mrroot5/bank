@@ -6,6 +6,7 @@ defmodule Bank.UsersFixtures do
 
   @spec unique_user_email :: String.t()
   def unique_user_email, do: "user#{System.unique_integer()}@example.com"
+
   @spec valid_user_password :: String.t()
   def valid_user_password, do: "hello world!"
 

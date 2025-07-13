@@ -33,7 +33,7 @@ defmodule BankWeb.UserAuth do
   """
   @spec log_in_user(Conn.t(), Ecto.Schema.t(), map()) :: Conn.t()
   def log_in_user(conn, user, params \\ %{}) do
-    token = Users.generate_user_session_token!(user)
+    token = Users.generate_user_session_token(user)
     user_return_to = get_session(conn, :user_return_to)
 
     conn
@@ -159,7 +159,7 @@ defmodule BankWeb.UserAuth do
   If you want to enforce the user email is confirmed before
   they use the application at all, here would be a good place.
   """
-  @spec require_authenticated_user(Conn.t(), map()) :: Conn.t()
+  @spec require_authenticated_user(Conn.t(), keyword()) :: Conn.t()
   def require_authenticated_user(conn, _opts) do
     if conn.assigns[:current_user] do
       conn
