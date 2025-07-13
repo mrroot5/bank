@@ -57,6 +57,6 @@ jobs:
           MIX_ENV: dev
 
       - name: Run dialyzer
-        run: mix dialyzer --quiet-with-result --format github
+        run: mix dialyzer --format github
         env:
           MIX_ENV: dev
