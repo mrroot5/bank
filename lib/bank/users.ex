@@ -131,7 +131,8 @@ defmodule Bank.Users do
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec apply_user_email(Ecto.Schema.t(), binary(), map()) :: Ecto.Changeset.t()
+  @spec apply_user_email(Ecto.Schema.t(), binary(), map()) ::
+          {:ok, Ecto.Schema.t()} | map() | {:error, Ecto.Changeset.t()}
   def apply_user_email(user, password, attrs) do
     user
     |> User.email_changeset(attrs)
@@ -169,7 +170,7 @@ defmodule Bank.Users do
       {:ok, %{to: ..., body: ...}}
 
   """
-  @spec deliver_user_update_email_instructions(Ecto.Schema.t(), binary(), binary()) ::
+  @spec deliver_user_update_email_instructions(Ecto.Schema.t(), binary(), fun()) ::
           UserNotifier.t()
   def deliver_user_update_email_instructions(%User{} = user, current_email, update_email_url_fun)
       when is_function(update_email_url_fun, 1) do
@@ -205,7 +206,8 @@ defmodule Bank.Users do
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec update_user_password(Ecto.Schema.t(), binary(), map()) :: Ecto.Multi.t()
+  @spec update_user_password(Ecto.Schema.t(), binary(), map()) ::
+          {:ok, Ecto.Schema.t()} | {:error, Ecto.Changeset.t()}
   def update_user_password(user, password, attrs) do
     changeset =
       user

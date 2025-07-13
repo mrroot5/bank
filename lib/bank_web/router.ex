@@ -48,7 +48,7 @@ defmodule BankWeb.Router do
   ## Authentication routes
 
   scope "/", BankWeb do
-    pipe_through [:browser, :redirect_if_user_is_authenticated]
+    pipe_through [:browser]
 
     live_session :redirect_if_user_is_authenticated,
       on_mount: [{BankWeb.UserAuth, :redirect_if_user_is_authenticated}] do
@@ -62,7 +62,7 @@ defmodule BankWeb.Router do
   end
 
   scope "/", BankWeb do
-    pipe_through [:browser, :require_authenticated_user]
+    pipe_through [:browser]
 
     live_session :require_authenticated_user,
       on_mount: [{BankWeb.UserAuth, :ensure_authenticated}] do
