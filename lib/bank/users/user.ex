@@ -2,10 +2,16 @@ defmodule Bank.Users.User do
   @moduledoc """
   User schema and changesets.
 
+  The possible user roles are hardcoded
+
   Generated with Phoenix.
   """
   use Ecto.Schema
   import Ecto.Changeset
+
+  @roles [:superuser, :user]
+
+  @type roles :: [atom()]
 
   schema "users" do
     field :email, :string
@@ -14,7 +20,18 @@ defmodule Bank.Users.User do
     field :current_password, :string, virtual: true, redact: true
     field :confirmed_at, :utc_datetime
 
+    field :roles, {:array, Ecto.Enum},
+      values: @roles,
+      default: [:user],
+      redact: true
+
     timestamps(type: :utc_datetime)
+  end
+
+  def changeset(user, attrs) do
+    user
+    |> cast(attrs, [:email, :roles])
+    |> validate_required([:email, :roles])
   end
 
   @doc """
@@ -84,6 +101,14 @@ defmodule Bank.Users.User do
     |> cast(attrs, [:password])
     |> validate_confirmation(:password, message: "does not match password")
     |> validate_password(opts)
+  end
+
+  @spec roles_changeset(Ecto.Schema.t(), map(), list()) :: Ecto.Changeset.t()
+  def roles_changeset(user, attrs, _opts) do
+    user
+    |> cast(attrs, [:roles])
+    |> validate_required([:roles])
+    |> validate_subset(:roles, @roles)
   end
 
   @doc """
