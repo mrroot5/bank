@@ -2,8 +2,6 @@ defmodule BankWeb.Headquarters.UserLive.Index do
   use BankWeb, :live_view
 
   alias Bank.Users
-  alias Bank.Users.User
-  # alias BankWeb.Admin.UserLive.Utils
   alias Phoenix.LiveView.Socket
 
   @impl true
@@ -21,12 +19,6 @@ defmodule BankWeb.Headquarters.UserLive.Index do
     socket
     |> assign(:page_title, "Edit User")
     |> assign(:user, Users.get_user!(id))
-  end
-
-  defp apply_action(socket, :new, _params) do
-    socket
-    |> assign(:page_title, "New User")
-    |> assign(:user, %User{})
   end
 
   defp apply_action(socket, :index, _params) do
