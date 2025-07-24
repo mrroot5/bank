@@ -19,7 +19,7 @@ defmodule BankWeb.Headquarters.UserLive.Index do
   @spec apply_action(Socket.t(), atom(), map()) :: Socket.t()
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
-    |> assign(:page_title, "Edit User INDEX")
+    |> assign(:page_title, "Edit User")
     |> assign(:user, Users.get_user!(id))
   end
 

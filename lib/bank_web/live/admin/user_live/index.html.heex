@@ -12,10 +12,8 @@
   rows={@streams.users}
   row_click={fn {_id, user} -> JS.navigate(~p"/hq/users/#{user}") end}
 >
-  <%!-- <:col :let={{_id, user}}><%= inspect user.roles %></:col> --%>
 
   <:col :let={{_id, user}} label="Email">{user.email}</:col>
-  <%!-- <:col :let={{_id, user}} label="Roles">{Utils.roles_to_string(user.roles)}</:col> --%>
   <:action :let={{_id, user}}>
     <div class="sr-only">
       <.link navigate={~p"/hq/users/#{user}"}>Show</.link>
