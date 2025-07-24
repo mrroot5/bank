@@ -176,10 +176,10 @@ defmodule BankWeb.UserAuth do
 
   @spec allowed_admin?(map(), Ecto.Schema.t()) :: boolean()
   defp allowed_admin?(session, user) do
-    is_admin? = Map.get(session, "is_admin", false)
+    is_headquarters? = Map.get(session, "is_headquarters", false)
 
-    is_admin? and
-      Bodyguard.permit!(BankWeb.Admin.Policies, "action", user, [],
+    is_headquarters? and
+      Bodyguard.permit!(BankWeb.Headquarters.Policies, "action", user, [],
         error_message: "You are not allowed to be here"
       )
   end

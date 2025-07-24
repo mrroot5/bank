@@ -78,15 +78,14 @@ defmodule BankWeb.Router do
     post "/users/confirm/:token", UserConfirmationController, :update
   end
 
-  scope "/admin", BankWeb.Admin do
+  scope "/hq", BankWeb.Headquarters do
     pipe_through [:browser]
 
-    live_session :admin,
-      session: %{"is_admin" => true},
+    live_session :hq,
+      session: %{"is_headquarters" => true},
       on_mount: {BankWeb.UserAuth, :ensure_authenticated} do
       scope "/users", UserLive do
         live "/", Index, :index
-        live "/new", Index, :new
         live "/:id/edit", Index, :edit
 
         live "/:id", Show, :show

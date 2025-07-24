@@ -1,4 +1,4 @@
-defmodule BankWeb.Admin.Policies do
+defmodule BankWeb.Headquarters.Policies do
   @moduledoc """
   General purpose authorization module for admin [policies](https://hexdocs.pm/bodyguard/Bodyguard.Policy.html)
   """

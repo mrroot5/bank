@@ -1,4 +1,4 @@
-defmodule BankWeb.Admin.UserLive.FormComponent do
+defmodule BankWeb.Headquarters.UserLive.FormComponent do
   use BankWeb, :live_component
 
   alias Bank.Users

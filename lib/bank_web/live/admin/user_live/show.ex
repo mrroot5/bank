@@ -1,8 +1,8 @@
-defmodule BankWeb.Admin.UserLive.Show do
+defmodule BankWeb.Headquarters.UserLive.Show do
   use BankWeb, :live_view
 
   alias Bank.Users
-  alias BankWeb.Admin.UserLive.Utils
+  alias BankWeb.Headquarters.UserLive.Utils
 
   @impl true
   def mount(_params, _session, socket) do

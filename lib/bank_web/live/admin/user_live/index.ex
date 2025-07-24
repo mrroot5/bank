@@ -1,4 +1,4 @@
-defmodule BankWeb.Admin.UserLive.Index do
+defmodule BankWeb.Headquarters.UserLive.Index do
   use BankWeb, :live_view
 
   alias Bank.Users
@@ -36,7 +36,7 @@ defmodule BankWeb.Admin.UserLive.Index do
   end
 
   @impl true
-  def handle_info({BankWeb.Admin.UserLive.FormComponent, {:saved, user}}, socket) do
+  def handle_info({BankWeb.Headquarters.UserLive.FormComponent, {:saved, user}}, socket) do
     {:noreply, stream_insert(socket, :users, user)}
   end
 

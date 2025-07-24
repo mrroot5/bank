@@ -1,4 +1,4 @@
-defmodule BankWeb.Admin.UserLive.Utils do
+defmodule BankWeb.Headquarters.UserLive.Utils do
   alias Bank.Users.User
 
   @spec roles_to_string(User.roles()) :: [binary()]
