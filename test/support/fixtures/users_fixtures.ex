@@ -34,4 +34,18 @@ defmodule Bank.UsersFixtures do
     [_, token | _] = String.split(captured_email.text_body, "[TOKEN]")
     token
   end
+
+  @doc """
+  Generate a user.
+  """
+  def user_fixture(attrs \\ %{}) do
+    {:ok, user} =
+      attrs
+      |> Enum.into(%{
+        roles: :superuser
+      })
+      |> Bank.Users.create_user()
+
+    user
+  end
 end
