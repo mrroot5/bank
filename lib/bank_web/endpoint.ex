@@ -7,6 +7,7 @@ defmodule BankWeb.Endpoint do
   @session_options [
     store: :cookie,
     key: "_bank_key",
+    encryption_salt: "1grd#&kjRP!zGx",
     signing_salt: "hyboxjkO",
     same_site: "Lax"
   ]
