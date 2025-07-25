@@ -42,6 +42,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-deps-cache
 
+      - name: Restore cldr cache
+        uses: actions/cache@v4
+        with:
+          path: priv/cldr
+          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-cldr-cache
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-cldr-cache
+
       - name: Install deps & compile
         run: |
           mix local.hex --force
@@ -51,6 +59,11 @@ jobs:
 
       - name: Check warnings
         run: mix compile --warnings-as-errors --no-deps-check
+        env:
+          MIX_ENV: dev
+
+      - name: Check Formatting
+        run: mix format --check-formatted
         env:
           MIX_ENV: dev
 
