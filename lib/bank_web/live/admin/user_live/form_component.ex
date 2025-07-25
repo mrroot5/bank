@@ -70,20 +70,5 @@ defmodule BankWeb.Headquarters.UserLive.FormComponent do
     end
   end
 
-  defp save_user(socket, :new, user_params) do
-    case Users.create_user(user_params) do
-      {:ok, user} ->
-        notify_parent({:saved, user})
-
-        {:noreply,
-         socket
-         |> put_flash(:info, "User created successfully")
-         |> push_patch(to: socket.assigns.patch)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, form: to_form(changeset))}
-    end
-  end
-
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end
