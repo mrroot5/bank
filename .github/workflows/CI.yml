@@ -29,7 +29,7 @@ jobs:
       - name: Restore compile cache
         uses: actions/cache@v4
         with:
-          path: _build/test
+          path: _build/dev
           key:  ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-build-cache
           restore-keys: |
             ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-build-cache
