@@ -1,4 +1,4 @@
-.PHONY: bash iex logs-web start tests
+.PHONY: bash credo dialyzer iex logs-web recode start tests
 
 ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 $(eval $(ARGS):;@:)
@@ -9,11 +9,20 @@ bash:
 ci:
 	@make-scripts/ci.sh $(ARGS)
 
+credo:
+	@docker compose exec web mix credo --strict
+
+dialyzer:
+	@docker compose exec web mix dialyzer
+
 iex:
 	@docker compose exec web sh -c 'iex --cookie web --sname console --remsh web_$$(hostname)@$$(hostname)'
 
 logs-web:
 	@docker compose logs -f web
+
+recode:
+	docker compose exec web mix recode --no-dry
 
 start:
 	@docker compose up -d
