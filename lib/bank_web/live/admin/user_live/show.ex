@@ -3,13 +3,14 @@ defmodule BankWeb.Headquarters.UserLive.Show do
 
   alias Bank.Users
   alias BankWeb.Headquarters.UserLive.Utils
+  alias Phoenix.LiveView
 
-  @impl true
+  @impl LiveView
   def mount(_params, _session, socket) do
     {:ok, socket}
   end
 
-  @impl true
+  @impl LiveView
   def handle_params(%{"id" => id}, _, socket) do
     {:noreply,
      socket
@@ -18,5 +19,5 @@ defmodule BankWeb.Headquarters.UserLive.Show do
   end
 
   defp page_title(:show), do: "Show User"
-  defp page_title(:edit), do: "Edit User SHOW"
+  defp page_title(:edit), do: "Edit User"
 end

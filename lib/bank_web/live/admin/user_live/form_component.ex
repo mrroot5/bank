@@ -2,8 +2,9 @@ defmodule BankWeb.Headquarters.UserLive.FormComponent do
   use BankWeb, :live_component
 
   alias Bank.Users
+  alias Phoenix.LiveComponent
 
-  @impl true
+  @impl LiveComponent
   def render(assigns) do
     ~H"""
     <div>
@@ -23,7 +24,6 @@ defmodule BankWeb.Headquarters.UserLive.FormComponent do
           field={@form[:roles]}
           type="select"
           label="Roles"
-          prompt="Choose a value"
           multiple
           options={Ecto.Enum.values(Bank.Users.User, :roles)}
         />
@@ -35,7 +35,7 @@ defmodule BankWeb.Headquarters.UserLive.FormComponent do
     """
   end
 
-  @impl true
+  @impl LiveComponent
   def update(%{user: user} = assigns, socket) do
     {:ok,
      socket
@@ -45,7 +45,7 @@ defmodule BankWeb.Headquarters.UserLive.FormComponent do
      end)}
   end
 
-  @impl true
+  @impl LiveComponent
   def handle_event("validate", %{"user" => user_params}, socket) do
     changeset = Users.change_user(socket.assigns.user, user_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}

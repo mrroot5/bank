@@ -7,6 +7,9 @@ defmodule BankWeb.FallbackController do
   """
   use BankWeb, :controller
 
+  alias Plug.Conn
+
+  @spec call(Conn.t(), tuple()) :: Conn.t()
   def call(conn, {:error, :unauthorized}) do
     conn
     |> put_status(:forbidden)

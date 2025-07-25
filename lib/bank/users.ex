@@ -11,6 +11,7 @@ defmodule Bank.Users do
   alias Bank.Users.UserToken
 
   @type ecto_get :: Ecto.Schema.t() | term() | nil
+  @type ecto_write_db :: {:ok, Ecto.Schema.t()} | {:error, Ecto.Changeset.t()}
 
   ## Database getters
 
@@ -372,25 +373,6 @@ defmodule Bank.Users do
     end
   end
 
-  @spec user_email_multi(Ecto.Schema.t(), binary(), term()) :: Ecto.Multi.t()
-  defp user_email_multi(user, email, context) do
-    changeset =
-      user
-      |> User.email_changeset(%{email: email})
-      |> User.confirm_changeset()
-
-    Ecto.Multi.new()
-    |> Ecto.Multi.update(:user, changeset)
-    |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, [context]))
-  end
-
-  @spec confirm_user_multi(Ecto.Schema.t()) :: Ecto.Multi.t()
-  defp confirm_user_multi(user) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.update(:user, User.confirm_changeset(user))
-    |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, ["confirm"]))
-  end
-
   @doc """
   Returns the list of users.
 
@@ -400,27 +382,8 @@ defmodule Bank.Users do
       [%User{}, ...]
 
   """
-  def list_users do
-    Repo.all(User)
-  end
-
-  @doc """
-  Creates a user.
-
-  ## Examples
-
-      iex> create_user(%{field: value})
-      {:ok, %User{}}
-
-      iex> create_user(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_user(attrs \\ %{}) do
-    %User{}
-    |> User.changeset(attrs)
-    |> Repo.insert()
-  end
+  @spec list_users() :: [Ecto.Schema.t()]
+  def list_users, do: Repo.all(User)
 
   @doc """
   Updates a user.
@@ -434,6 +397,7 @@ defmodule Bank.Users do
       {:error, %Ecto.Changeset{}}
 
   """
+  @spec update_user(Ecto.Schema.t(), map()) :: ecto_write_db()
   def update_user(%User{} = user, attrs) do
     user
     |> User.changeset(attrs)
@@ -452,9 +416,8 @@ defmodule Bank.Users do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_user(%User{} = user) do
-    Repo.delete(user)
-  end
+  @spec delete_user(Ecto.Schema.t()) :: ecto_write_db()
+  def delete_user(%User{} = user), do: Repo.delete(user)
 
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking user changes.
@@ -463,9 +426,26 @@ defmodule Bank.Users do
 
       iex> change_user(user)
       %Ecto.Changeset{data: %User{}}
-
   """
-  def change_user(%User{} = user, attrs \\ %{}) do
-    User.changeset(user, attrs)
+  @spec change_user(Ecto.Schema.t(), map()) :: Ecto.Changeset.t()
+  def change_user(%User{} = user, attrs \\ %{}), do: User.changeset(user, attrs)
+
+  @spec user_email_multi(Ecto.Schema.t(), binary(), term()) :: Ecto.Multi.t()
+  defp user_email_multi(user, email, context) do
+    changeset =
+      user
+      |> User.email_changeset(%{email: email})
+      |> User.confirm_changeset()
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.update(:user, changeset)
+    |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, [context]))
+  end
+
+  @spec confirm_user_multi(Ecto.Schema.t()) :: Ecto.Multi.t()
+  defp confirm_user_multi(user) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.update(:user, User.confirm_changeset(user))
+    |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, ["confirm"]))
   end
 end
