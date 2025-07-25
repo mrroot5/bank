@@ -35,6 +35,7 @@ defmodule Bank.MixProject do
     [
       {:argon2_elixir, "~> 3.0"},
       {:bandit, "~> 1.5"},
+      {:bodyguard, "~> 2.4"},
       {:credo, "~> 1.7", only: :dev, runtime: false},
       {:decimal, "~> 2.0"},
       {:dialyxir, "~> 1.4", only: :dev, runtime: false},

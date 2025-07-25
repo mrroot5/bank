@@ -46,9 +46,9 @@ defmodule BankWeb.ConnCase do
   It stores an updated connection and a registered user in the
   test context.
   """
-  @spec register_and_log_in_user(map()) :: Conn.t()
-  def register_and_log_in_user(%{conn: conn}) do
-    user = Bank.UsersFixtures.user_fixture()
+  @spec register_and_log_in_user(map(), map()) :: Conn.t()
+  def register_and_log_in_user(%{conn: conn}, fixture_attrs \\ %{}) do
+    user = Bank.UsersFixtures.user_fixture(fixture_attrs)
     %{conn: log_in_user(conn, user), user: user}
   end
 

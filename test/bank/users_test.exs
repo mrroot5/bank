@@ -103,7 +103,7 @@ defmodule Bank.UsersTest do
   describe "change_user_registration/2" do
     test "returns a changeset" do
       assert %Ecto.Changeset{} = changeset = Users.change_user_registration(%User{})
-      assert changeset.required == [:password, :email]
+      assert changeset.required == [:roles, :password, :email]
     end
 
     test "allows fields to be set" do
@@ -509,6 +509,49 @@ defmodule Bank.UsersTest do
   describe "inspect/2 for the User module" do
     test "does not include password" do
       refute inspect(%User{password: "123456"}) =~ "password: \"123456\""
+    end
+  end
+
+  describe "users" do
+    alias Bank.Users.User
+
+    import Bank.UsersFixtures
+
+    @invalid_attrs %{roles: nil}
+
+    test "list_users/0 returns all users" do
+      user = user_fixture()
+      assert Users.list_users() == [user]
+    end
+
+    test "get_user!/1 returns the user with given id" do
+      user = user_fixture()
+      assert Users.get_user!(user.id) == user
+    end
+
+    test "update_user/2 with valid data updates the user" do
+      user = user_fixture()
+      update_attrs = %{roles: [:user]}
+
+      assert {:ok, %User{} = user} = Users.update_user(user, update_attrs)
+      assert user.roles == [:user]
+    end
+
+    test "update_user/2 with invalid data returns error changeset" do
+      user = user_fixture()
+      assert {:error, %Ecto.Changeset{}} = Users.update_user(user, @invalid_attrs)
+      assert user == Users.get_user!(user.id)
+    end
+
+    test "delete_user/1 deletes the user" do
+      user = user_fixture()
+      assert {:ok, %User{}} = Users.delete_user(user)
+      assert_raise Ecto.NoResultsError, fn -> Users.get_user!(user.id) end
+    end
+
+    test "change_user/1 returns a user changeset" do
+      user = user_fixture()
+      assert %Ecto.Changeset{} = Users.change_user(user)
     end
   end
 end

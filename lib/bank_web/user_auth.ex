@@ -116,8 +116,10 @@ defmodule BankWeb.UserAuth do
 
   def on_mount(:ensure_authenticated, _params, session, socket) do
     socket = mount_current_user(socket, session)
+    current_user = socket.assigns.current_user
 
-    if socket.assigns.current_user do
+    if current_user do
+      allowed_admin?(session, current_user)
       {:cont, socket}
     else
       socket =
@@ -170,6 +172,16 @@ defmodule BankWeb.UserAuth do
       |> redirect(to: ~p"/users/log_in")
       |> halt()
     end
+  end
+
+  @spec allowed_admin?(map(), Ecto.Schema.t()) :: boolean()
+  defp allowed_admin?(session, user) do
+    is_headquarters? = Map.get(session, "is_headquarters", false)
+
+    is_headquarters? and
+      Bodyguard.permit!(BankWeb.Headquarters.Policies, "action", user, [],
+        error_message: "You are not allowed to be here"
+      )
   end
 
   @spec maybe_write_remember_me_cookie(Conn.t(), binary(), map()) :: Conn.t()

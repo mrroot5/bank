@@ -2,10 +2,16 @@ defmodule Bank.Users.User do
   @moduledoc """
   User schema and changesets.
 
+  The possible user roles are hardcoded
+
   Generated with Phoenix.
   """
   use Ecto.Schema
   import Ecto.Changeset
+
+  @roles [:superuser, :user]
+
+  @type roles :: [atom()]
 
   schema "users" do
     field :email, :string
@@ -14,7 +20,19 @@ defmodule Bank.Users.User do
     field :current_password, :string, virtual: true, redact: true
     field :confirmed_at, :utc_datetime
 
+    field :roles, {:array, Ecto.Enum},
+      values: @roles,
+      default: [:user],
+      redact: true
+
     timestamps(type: :utc_datetime)
+  end
+
+  @spec changeset(Ecto.Schema.t(), map()) :: Ecto.Changeset.t()
+  def changeset(user, attrs) do
+    user
+    |> cast(attrs, [:email, :roles])
+    |> validate_required([:email, :roles])
   end
 
   @doc """
@@ -44,8 +62,10 @@ defmodule Bank.Users.User do
   def registration_changeset(user, attrs, opts \\ []) do
     user
     |> cast(attrs, [:email, :password])
+    |> cast(attrs, [:roles], empty_values: [nil, []])
     |> validate_email(opts)
     |> validate_password(opts)
+    |> validate_roles()
   end
 
   @doc """
@@ -84,6 +104,13 @@ defmodule Bank.Users.User do
     |> cast(attrs, [:password])
     |> validate_confirmation(:password, message: "does not match password")
     |> validate_password(opts)
+  end
+
+  @spec roles_changeset(Ecto.Schema.t(), map(), list()) :: Ecto.Changeset.t()
+  def roles_changeset(user, attrs, _opts) do
+    user
+    |> cast(attrs, [:roles])
+    |> validate_roles()
   end
 
   @doc """
@@ -145,6 +172,13 @@ defmodule Bank.Users.User do
     # |> validate_format(:password, ~r/[A-Z]/, message: "at least one upper case character")
     # |> validate_format(:password, ~r/[!?@#$%^&*_0-9]/, message: "at least one digit or punctuation character")
     |> maybe_hash_password(opts)
+  end
+
+  @spec validate_roles(Ecto.Changeset.t()) :: Ecto.Changeset.t()
+  defp validate_roles(changeset) do
+    changeset
+    |> validate_required([:roles])
+    |> validate_subset(:roles, @roles)
   end
 
   @spec maybe_hash_password(Ecto.Changeset.t(), keyword()) :: Ecto.Changeset.t()
