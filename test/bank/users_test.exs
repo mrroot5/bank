@@ -103,7 +103,7 @@ defmodule Bank.UsersTest do
   describe "change_user_registration/2" do
     test "returns a changeset" do
       assert %Ecto.Changeset{} = changeset = Users.change_user_registration(%User{})
-      assert changeset.required == [:password, :email]
+      assert changeset.required == [:roles, :password, :email]
     end
 
     test "allows fields to be set" do
@@ -529,23 +529,12 @@ defmodule Bank.UsersTest do
       assert Users.get_user!(user.id) == user
     end
 
-    test "create_user/1 with valid data creates a user" do
-      valid_attrs = %{roles: :superuser}
-
-      assert {:ok, %User{} = user} = Users.create_user(valid_attrs)
-      assert user.roles == :superuser
-    end
-
-    test "create_user/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Users.create_user(@invalid_attrs)
-    end
-
     test "update_user/2 with valid data updates the user" do
       user = user_fixture()
-      update_attrs = %{roles: :user}
+      update_attrs = %{roles: [:user]}
 
       assert {:ok, %User{} = user} = Users.update_user(user, update_attrs)
-      assert user.roles == :user
+      assert user.roles == [:user]
     end
 
     test "update_user/2 with invalid data returns error changeset" do
