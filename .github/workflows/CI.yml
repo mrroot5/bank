@@ -26,14 +26,13 @@ jobs:
           elixir-version: ${{matrix.elixir}}
           otp-version: ${{matrix.otp}}
 
-      - name: Restore compile cache
+      - name: Restore compiled cache
         uses: actions/cache@v4
         with:
           path: _build/dev
           key:  ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-build-cache
           restore-keys: |
             ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-build-cache
-            ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
 
       - name: Restore dependencies cache
         uses: actions/cache@v4
@@ -42,7 +41,14 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-deps-cache
           restore-keys: |
             ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-deps-cache
-            ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
+
+      - name: Restore cldr cache
+        uses: actions/cache@v4
+        with:
+          path: priv/cldr
+          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-cldr-cache
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-cldr-cache
 
       - name: Install deps & compile
         run: |
@@ -50,6 +56,16 @@ jobs:
           mix local.rebar --force
           mix deps.get
           mix compile --warnings-as-errors
+
+      - name: Check warnings
+        run: mix compile --warnings-as-errors --no-deps-check
+        env:
+          MIX_ENV: dev
+
+      - name: Check Formatting
+        run: mix format --check-formatted
+        env:
+          MIX_ENV: dev
 
       - name: Run credo
         run: mix credo --strict
