@@ -391,8 +391,6 @@ defmodule Bank.Users do
     |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, ["confirm"]))
   end
 
-
-
   @doc """
   Returns the list of users.
 

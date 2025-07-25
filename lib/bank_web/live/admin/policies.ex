@@ -8,7 +8,7 @@ defmodule BankWeb.Headquarters.Policies do
 
   action_fallback BankWeb.FallbackController
 
-  def authorize(_, %{roles: roles}, _params), do: if(:superuser in roles, do: true, else: false)
+  def authorize(_, %{roles: roles}, _params), do: :superuser in roles
 
   def authorize(_action, _user, _params), do: false
 end
