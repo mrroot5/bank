@@ -56,6 +56,11 @@ jobs:
         env:
           MIX_ENV: dev
 
+      - name: Run recode
+        run: mix recode --dry
+        env:
+          MIX_ENV: dev
+
       - name: Run dialyzer
         run: mix dialyzer --format github
         env:
