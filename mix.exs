@@ -33,7 +33,7 @@ defmodule Bank.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:argon2_elixir, "~> 3.0"},
+      {:argon2_elixir, "~> 4.1"},
       {:bandit, "~> 1.5"},
       {:bodyguard, "~> 2.4"},
       {:credo, "~> 1.7", only: :dev, runtime: false},
