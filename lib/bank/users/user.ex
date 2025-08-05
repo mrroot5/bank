@@ -6,8 +6,9 @@ defmodule Bank.Users.User do
 
   Generated with Phoenix.
   """
-  use Ecto.Schema
-  import Ecto.Changeset
+  use Bank.Schema
+
+  alias Bank.Accounts.Account
 
   @roles [:superuser, :user]
 
@@ -22,8 +23,9 @@ defmodule Bank.Users.User do
 
     field :roles, {:array, Ecto.Enum},
       values: @roles,
-      default: [:user],
-      redact: true
+      default: [:user]
+
+    has_many :accounts, Account
 
     timestamps(type: :utc_datetime)
   end
