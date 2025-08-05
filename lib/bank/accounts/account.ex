@@ -7,6 +7,8 @@ defmodule Bank.Accounts.Account do
   alias Bank.Ledgers.Ledger
   alias Bank.Transactions.Transaction
   alias Bank.Users.User
+  alias Ecto.Changeset
+  alias Ecto.Schema
 
   @account_types ~w(checking savings business wholesale)a
   @account_statuses ~w(active suspended closed frozen)a
@@ -26,11 +28,11 @@ defmodule Bank.Accounts.Account do
     timestamps(type: :utc_datetime)
   end
 
-  def balance_changeset(account, new_balance) do
-    account
-    |> change(balance: new_balance, balance_updated_at: DateTime.utc_now())
-  end
+  @spec balance_changeset(Schema.t(), integer()) :: Changeset.t()
+  def balance_changeset(account, new_balance),
+    do: change(account, balance: new_balance, balance_updated_at: DateTime.utc_now())
 
+  @spec changeset(Schema.t(), map()) :: Changeset.t()
   def changeset(account, attrs) do
     account
     |> cast(attrs, [
@@ -53,6 +55,7 @@ defmodule Bank.Accounts.Account do
     |> foreign_key_constraint(:user_id)
   end
 
+  @spec prevent_currency_update(Changeset.t(), map()) :: Changeset.t()
   defp prevent_currency_update(changeset, %{currency: old_currency}) do
     case fetch_change(changeset, :currency) do
       {:ok, new_currency} when new_currency != old_currency ->

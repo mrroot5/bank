@@ -31,6 +31,7 @@ defmodule Bank.Transactions.TransactionMetadata do
     field :origin_reference, :string
   end
 
+  @spec changeset(Ecto.Schema.t(), map()) :: Ecto.Changeset.t()
   def changeset(metadata, attrs) do
     metadata
     |> cast(attrs, [

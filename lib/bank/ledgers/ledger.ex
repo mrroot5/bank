@@ -22,6 +22,7 @@ defmodule Bank.Ledgers.Ledger do
     timestamps(type: :utc_datetime, updated_at: false)
   end
 
+  @spec changeset(Ecto.Schema.t(), map()) :: Ecto.Changeset.t()
   def changeset(ledger, attrs) do
     ledger
     |> cast(attrs, [:amount, :currency, :entry_type, :origin, :account_id, :transaction_id])
