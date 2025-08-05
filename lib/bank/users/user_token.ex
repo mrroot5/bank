@@ -22,7 +22,7 @@ defmodule Bank.Users.UserToken do
     field :token, :binary
     field :context, :string
     field :sent_to, :string
-    belongs_to :user, Bank.Users.User
+    belongs_to :user, Bank.Users.User, type: :binary_id
 
     timestamps(type: :utc_datetime, updated_at: false)
   end
