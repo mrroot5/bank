@@ -8,7 +8,7 @@ defmodule Bank.UsersFixtures do
   def unique_user_email, do: "user#{System.unique_integer()}@example.com"
 
   @spec valid_user_password :: String.t()
-  def valid_user_password, do: "hello world!"
+  def valid_user_password, do: "Hello w0rld!"
 
   @spec valid_user_attributes(map()) :: map()
   def valid_user_attributes(attrs \\ %{}) do

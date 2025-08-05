@@ -7,6 +7,8 @@ defmodule Bank.UsersTest do
   alias Bank.Users.User
   alias Bank.Users.UserToken
 
+  @new_valid_password "New valid passw0rd!"
+
   describe "get_user_by_email/1" do
     test "does not return the user if the email does not exist" do
       refute Users.get_user_by_email("unknown@example.com")
@@ -39,7 +41,7 @@ defmodule Bank.UsersTest do
   describe "get_user!/1" do
     test "raises if id is invalid" do
       assert_raise Ecto.NoResultsError, fn ->
-        Users.get_user!(-1)
+        Users.get_user!(Ecto.UUID.generate())
       end
     end
 
@@ -64,7 +66,11 @@ defmodule Bank.UsersTest do
 
       assert %{
                email: ["must have the @ sign and no spaces"],
-               password: ["should be at least 12 character(s)"]
+               password: [
+                 "at least one digit or punctuation character",
+                 "at least one upper case character",
+                 "should be at least 12 character(s)"
+               ]
              } = errors_on(changeset)
     end
 
@@ -251,11 +257,11 @@ defmodule Bank.UsersTest do
     test "allows fields to be set" do
       changeset =
         Users.change_user_password(%User{}, %{
-          "password" => "new valid password"
+          "password" => @new_valid_password
         })
 
       assert changeset.valid?
-      assert get_change(changeset, :password) == "new valid password"
+      assert get_change(changeset, :password) == @new_valid_password
       assert is_nil(get_change(changeset, :hashed_password))
     end
   end
@@ -273,7 +279,11 @@ defmodule Bank.UsersTest do
         })
 
       assert %{
-               password: ["should be at least 12 character(s)"],
+               password: [
+                 "at least one digit or punctuation character",
+                 "at least one upper case character",
+                 "should be at least 12 character(s)"
+               ],
                password_confirmation: ["does not match password"]
              } = errors_on(changeset)
     end
@@ -297,11 +307,11 @@ defmodule Bank.UsersTest do
     test "updates the password", %{user: user} do
       {:ok, user} =
         Users.update_user_password(user, valid_user_password(), %{
-          password: "new valid password"
+          password: @new_valid_password
         })
 
       assert is_nil(user.password)
-      assert Users.get_user_by_email_and_password(user.email, "new valid password")
+      assert Users.get_user_by_email_and_password(user.email, @new_valid_password)
     end
 
     test "deletes all tokens for the given user", %{user: user} do
@@ -309,7 +319,7 @@ defmodule Bank.UsersTest do
 
       {:ok, _} =
         Users.update_user_password(user, valid_user_password(), %{
-          password: "new valid password"
+          password: @new_valid_password
         })
 
       refute Repo.get_by(UserToken, user_id: user.id)
@@ -482,7 +492,11 @@ defmodule Bank.UsersTest do
         })
 
       assert %{
-               password: ["should be at least 12 character(s)"],
+               password: [
+                 "at least one digit or punctuation character",
+                 "at least one upper case character",
+                 "should be at least 12 character(s)"
+               ],
                password_confirmation: ["does not match password"]
              } = errors_on(changeset)
     end
@@ -494,14 +508,14 @@ defmodule Bank.UsersTest do
     end
 
     test "updates the password", %{user: user} do
-      {:ok, updated_user} = Users.reset_user_password(user, %{password: "new valid password"})
+      {:ok, updated_user} = Users.reset_user_password(user, %{password: @new_valid_password})
       assert is_nil(updated_user.password)
-      assert Users.get_user_by_email_and_password(user.email, "new valid password")
+      assert Users.get_user_by_email_and_password(user.email, @new_valid_password)
     end
 
     test "deletes all tokens for the given user", %{user: user} do
       _ = Users.generate_user_session_token(user)
-      {:ok, _} = Users.reset_user_password(user, %{password: "new valid password"})
+      {:ok, _} = Users.reset_user_password(user, %{password: @new_valid_password})
       refute Repo.get_by(UserToken, user_id: user.id)
     end
   end

@@ -181,7 +181,7 @@ defmodule Bank.Users.User do
   defp validate_roles(changeset) do
     changeset
     |> validate_required([:roles])
-    |> validate_inclusion(:roles, @roles)
+    |> validate_subset(:roles, @roles)
   end
 
   @spec maybe_hash_password(Ecto.Changeset.t(), keyword()) :: Ecto.Changeset.t()
