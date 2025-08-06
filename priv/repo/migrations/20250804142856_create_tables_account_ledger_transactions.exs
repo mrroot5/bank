@@ -73,7 +73,6 @@ defmodule Bank.Repo.Migrations.CreateTablesAccountLedgerTransactions do
       add :id, :binary_id, primary_key: true
       add :amount, :decimal, precision: 18, scale: 6, null: false
       add :entry_type, :string, null: false
-      add :origin, :string, null: false
       add :account_id, references(:accounts, type: :binary_id, on_delete: :restrict), null: false
       add :transaction_id, references(:transactions, type: :binary_id, on_delete: :restrict)
 

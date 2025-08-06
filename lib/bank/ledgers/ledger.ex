@@ -9,12 +9,10 @@ defmodule Bank.Ledgers.Ledger do
   alias Bank.Transactions.Transaction
 
   @entry_types ~w(debit credit)a
-  @origin ~w(transaction atm)a
 
   schema "ledgers" do
     field :amount, :decimal
     field :entry_type, Ecto.Enum, values: @entry_types
-    field :origin, Ecto.Enum, values: @origin
 
     belongs_to :account, Account
     belongs_to :transaction, Transaction
