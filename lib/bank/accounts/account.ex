@@ -4,6 +4,7 @@ defmodule Bank.Accounts.Account do
   """
   use Bank.Schema
 
+  alias Bank.Accounts.AccountMetadata
   alias Bank.Ledgers.Ledger
   alias Bank.Transactions.Transaction
   alias Bank.Users.User
@@ -11,7 +12,7 @@ defmodule Bank.Accounts.Account do
   alias Ecto.Schema
 
   @account_types ~w(checking savings business wholesale)a
-  @account_statuses ~w(active suspended closed frozen)a
+  @account_statuses ~w(active suspended closed)a
 
   schema "accounts" do
     field :account_type, Ecto.Enum, values: @account_types, default: :checking
@@ -20,6 +21,8 @@ defmodule Bank.Accounts.Account do
     field :balance_updated_at, :utc_datetime
     field :currency, :string, default: "EUR"
     field :status, Ecto.Enum, values: @account_statuses, default: :active
+
+    embeds_one :metadata, AccountMetadata, on_replace: :update
 
     belongs_to :user, User
     has_many :ledgers, Ledger
@@ -44,6 +47,7 @@ defmodule Bank.Accounts.Account do
       :status,
       :user_id
     ])
+    |> cast_embed(:metadata, with: &AccountMetadata.changeset/2)
     |> validate_required([:account_number, :account_type, :currency, :name, :user_id])
     |> validate_inclusion(:account_type, @account_types)
     |> validate_inclusion(:status, @account_statuses)
