@@ -7,8 +7,6 @@ defmodule Bank.Ledgers do
   deleted once created.
   """
 
-  # TODO Create atomic database transactions to avoid balance problems
-
   import Ecto.Query, warn: false
   alias Bank.Repo
   alias Bank.Ledgers.Ledger
@@ -103,6 +101,15 @@ defmodule Bank.Ledgers do
   Note: Ledger entries should never be updated after creation.
   """
   def change_ledger(%Ledger{} = ledger, attrs \\ %{}), do: Ledger.changeset(ledger, attrs)
+
+  @spec infer_entry_type(Decimal.t()) :: :credit | :debit
+  def infer_entry_type(amount) do
+    if Decimal.negative?(%Decimal{} = amount) do
+      :debit
+    else
+      :credit
+    end
+  end
 
   # Private functions
   defp maybe_preload(query, nil), do: query
