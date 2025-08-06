@@ -95,13 +95,6 @@ defmodule Bank.Ledgers do
     |> Repo.all()
   end
 
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking ledger changes.
-
-  Note: Ledger entries should never be updated after creation.
-  """
-  def change_ledger(%Ledger{} = ledger, attrs \\ %{}), do: Ledger.changeset(ledger, attrs)
-
   @spec infer_entry_type(Decimal.t()) :: :credit | :debit
   def infer_entry_type(amount) do
     if Decimal.negative?(%Decimal{} = amount) do
