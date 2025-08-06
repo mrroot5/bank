@@ -4,14 +4,12 @@ defmodule Bank.Users do
   """
 
   import Ecto.Query, warn: false
-  alias Bank.Repo
 
+  alias Bank.EctoUtils
+  alias Bank.Repo
   alias Bank.Users.User
   alias Bank.Users.UserNotifier
   alias Bank.Users.UserToken
-
-  @type ecto_get :: Ecto.Schema.t() | term() | nil
-  @type ecto_write_db :: {:ok, Ecto.Schema.t()} | {:error, Ecto.Changeset.t()}
 
   ## Database getters
 
@@ -27,7 +25,7 @@ defmodule Bank.Users do
       nil
 
   """
-  @spec get_user_by_email(binary()) :: ecto_get()
+  @spec get_user_by_email(binary()) :: EctoUtils.get()
   def get_user_by_email(email) when is_binary(email) do
     Repo.get_by(User, email: email)
   end
@@ -44,7 +42,7 @@ defmodule Bank.Users do
       nil
 
   """
-  @spec get_user_by_email_and_password(binary(), binary()) :: ecto_get()
+  @spec get_user_by_email_and_password(binary(), binary()) :: EctoUtils.get()
   def get_user_by_email_and_password(email, password)
       when is_binary(email) and is_binary(password) do
     user = Repo.get_by(User, email: email)
@@ -397,7 +395,7 @@ defmodule Bank.Users do
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec update_user(Ecto.Schema.t(), map()) :: ecto_write_db()
+  @spec update_user(Ecto.Schema.t(), map()) :: EctoUtils.write()
   def update_user(%User{} = user, attrs) do
     user
     |> User.changeset(attrs)
@@ -416,7 +414,7 @@ defmodule Bank.Users do
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec delete_user(Ecto.Schema.t()) :: ecto_write_db()
+  @spec delete_user(Ecto.Schema.t()) :: EctoUtils.write()
   def delete_user(%User{} = user), do: Repo.delete(user)
 
   @doc """
