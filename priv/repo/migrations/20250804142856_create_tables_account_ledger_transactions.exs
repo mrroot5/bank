@@ -16,6 +16,7 @@ defmodule Bank.Repo.Migrations.CreateTablesAccountLedgerTransactions do
       add :balance, :decimal, precision: 18, scale: 6, default: 0.000000
       add :balance_updated_at, :utc_datetime, default: fragment("NOW()")
       add :currency, :string, null: false, default: "EUR"
+      add :metadata, :map, default: %{}
       add :status, :string, null: false, default: "active"
       add :user_id, references(:users, type: :binary_id, on_delete: :restrict), null: false
 
@@ -50,10 +51,10 @@ defmodule Bank.Repo.Migrations.CreateTablesAccountLedgerTransactions do
       add :currency, :string, null: false
       add :description, :text, null: false
       add :idempotency_key, :string
+      add :metadata, :map, default: %{}
       add :status, :string, null: false, default: "pending"
       add :transaction_type, :string, null: false
       add :account_id, references(:accounts, type: :binary_id, on_delete: :restrict), null: false
-      add :metadata, :map, default: %{}
 
       timestamps(type: :utc_datetime)
     end
