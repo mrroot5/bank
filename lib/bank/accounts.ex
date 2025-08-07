@@ -113,19 +113,6 @@ defmodule Bank.Accounts do
   end
 
   @doc """
-  Updates account balance atomically.
-
-  This function should be called within a transaction after creating
-  ledger entries to maintain consistency.
-  """
-  @spec update_balance(Schema.t(), struct()) :: EctoUtils.write()
-  def update_balance(%Account{} = account, new_balance) when is_struct(new_balance, Decimal) do
-    account
-    |> Account.balance_changeset(new_balance)
-    |> Repo.update()
-  end
-
-  @doc """
   Suspends an account.
   """
   @spec suspend_account(Schema.t()) :: EctoUtils.write()
