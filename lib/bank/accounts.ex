@@ -91,8 +91,10 @@ defmodule Bank.Accounts do
   @spec create_metadata(String.t()) :: map()
   def create_metadata(account_number) do
     %{
-      iban: IBANGenerator.generate(account_number: account_number),
-      swift: SWIFTGenerator.generate()
+      metadata: %{
+        iban: IBANGenerator.generate(account_number: account_number),
+        swift: SWIFTGenerator.generate()
+      }
     }
   end
 
