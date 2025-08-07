@@ -41,14 +41,13 @@ defmodule Bank.Accounts do
   end
 
   @doc """
-  Gets a single account by account number.
+  Get by whatever field you want
   """
-  @spec get_account_by_number(binary(), keyword()) :: Schema.t()
-  def get_account_by_number(account_number, opts \\ []) do
+  @spec get_by(map() | keyword(), keyword()) :: Schema.t()
+  def get_by(clauses, opts \\ []) do
     Account
-    |> where(account_number: ^account_number)
     |> QueryComposer.maybe_preload(opts[:preload])
-    |> Repo.one()
+    |> Repo.get_by(clauses)
   end
 
   @doc """
