@@ -76,6 +76,12 @@ defmodule Bank.Accounts.Account do
     |> cast_embed(:metadata, with: &AccountMetadata.changeset/2)
   end
 
+  @spec metadata_changeset(Ecto.Changeset.t(), %{
+          optional(:iban) => String.t(),
+          optional(:swift) => String.t()
+        }) :: Ecto.Changeset.t()
+  def metadata_changeset(changeset, metadata), do: put_embed(changeset, :metadata, metadata)
+
   @spec prevent_currency_update(Changeset.t(), map()) :: Changeset.t()
   defp prevent_currency_update(changeset, %{currency: old_currency}) do
     case fetch_change(changeset, :currency) do

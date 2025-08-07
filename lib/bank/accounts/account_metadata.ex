@@ -10,7 +10,12 @@ defmodule Bank.Accounts.AccountMetadata do
     field :swift, :string
   end
 
-  @spec changeset(Ecto.Schema.t(), map()) :: Ecto.Changeset.t()
+  @type t :: %__MODULE__{
+          iban: String.t() | nil,
+          swift: String.t() | nil
+        }
+
+  @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(metadata, attrs) do
     metadata
     |> cast(attrs, [

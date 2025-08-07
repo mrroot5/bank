@@ -12,6 +12,7 @@ defmodule Bank.Accounts do
   alias Bank.Accounts.Account
   alias Bank.Accounts.IBANGenerator
   alias Bank.Accounts.SWIFTGenerator
+  alias Bank.Accounts.AccountMetadata
   alias Bank.QueryComposer
   alias Bank.Repo
   alias Ecto.Schema
@@ -74,13 +75,11 @@ defmodule Bank.Accounts do
     changeset = Account.changeset(%Account{}, attrs)
 
     if changeset.valid? do
-      attrs_with_meta =
-        account_number
-        |> create_metadata()
-        |> Map.merge(attrs)
+      metadata = create_metadata(account_number)
 
       changeset
-      |> Account.changeset(attrs_with_meta)
+      |> Account.changeset(attrs)
+      |> Account.metadata_changeset(metadata)
       |> Repo.insert()
     else
       {:error, changeset}
@@ -90,10 +89,8 @@ defmodule Bank.Accounts do
   @spec create_metadata(String.t()) :: map()
   def create_metadata(account_number) do
     %{
-      metadata: %{
-        iban: IBANGenerator.generate(account_number: account_number),
-        swift: SWIFTGenerator.generate()
-      }
+      iban: IBANGenerator.generate(account_number: account_number),
+      swift: SWIFTGenerator.generate()
     }
   end
 
