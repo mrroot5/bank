@@ -11,7 +11,6 @@ defmodule Bank.Transactions do
   alias Bank.Transactions.Transaction
   alias Bank.Accounts
   alias Bank.Ledgers
-  alias Bank.Ledgers.Ledger
   alias Bank.QueryComposer
 
   @doc """
@@ -96,10 +95,12 @@ defmodule Bank.Transactions do
         transaction_id: transaction.id
       }
 
+      account = Accounts.get!(transaction.account_id)
+
       with {:ok, updated_transaction} <- transaction_result,
            {:ok, ledger} <- Ledgers.create_ledger(ledger_attrs),
-           {:ok, account} <- Accounts.update_balance(transaction.amount) do
-        {:ok, {updated_transaction, ledger, account}}
+           {:ok, updated_account} <- Accounts.update_balance(account, transaction.amount) do
+        {:ok, {updated_transaction, ledger, updated_account}}
       end
     end)
   end

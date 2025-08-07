@@ -33,8 +33,8 @@ defmodule Bank.Accounts do
 
   Raises `Ecto.NoResultsError` if the Account does not exist.
   """
-  @spec get_account!(UUID.t(), keyword()) :: Schema.t()
-  def get_account!(id, opts \\ []) do
+  @spec get!(UUID.t(), keyword()) :: Schema.t()
+  def get!(id, opts \\ []) do
     Account
     |> QueryComposer.maybe_preload(opts[:preload])
     |> Repo.get!(id)
@@ -56,14 +56,14 @@ defmodule Bank.Accounts do
 
   ## Examples
 
-      iex> create_account(%{field: value})
+      iex> create(%{field: value})
       {:ok, %Account{}}
 
-      iex> create_account(%{field: bad_value})
+      iex> create(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
   """
-  @spec create_account(map()) :: EctoUtils.write()
-  def create_account(attrs \\ %{}) do
+  @spec create(map()) :: EctoUtils.write()
+  def create(attrs \\ %{}) do
     changeset = Account.changeset(%Account{}, attrs)
 
     if changeset.valid? do

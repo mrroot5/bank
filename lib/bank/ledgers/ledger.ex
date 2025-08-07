@@ -26,7 +26,6 @@ defmodule Bank.Ledgers.Ledger do
     |> cast(attrs, [:amount, :currency, :entry_type, :origin, :account_id, :transaction_id])
     |> validate_required([:account_id, :amount, :currency, :entry_type])
     |> validate_inclusion(:entry_type, @entry_types)
-    |> validate_inclusion(:origin, @origin)
     |> validate_length(:currency, is: 3)
     |> foreign_key_constraint(:account_id)
     |> foreign_key_constraint(:transaction_id)
