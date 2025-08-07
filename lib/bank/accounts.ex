@@ -20,8 +20,8 @@ defmodule Bank.Accounts do
   @doc """
   Returns the list of accounts.
   """
-  @spec list_accounts(keyword()) :: [Schema.t()]
-  def list_accounts(opts \\ []) do
+  @spec list(keyword()) :: [Schema.t()]
+  def list(opts \\ []) do
     Account
     |> QueryComposer.compose(opts)
     |> QueryComposer.maybe_preload(opts[:preload])
@@ -83,7 +83,7 @@ defmodule Bank.Accounts do
       |> Account.changeset(attrs_with_meta)
       |> Repo.insert()
     else
-      changeset
+      {:error, changeset}
     end
   end
 
