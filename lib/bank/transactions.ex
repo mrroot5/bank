@@ -22,7 +22,7 @@ defmodule Bank.Transactions do
     |> QueryComposer.compose(opts)
     |> QueryComposer.filter_by_date_range(opts)
     |> order_by(^(opts[:order_by] || [desc: :inserted_at]))
-    |> maybe_preload(opts[:preload])
+    |> QueryComposer.maybe_preload(opts[:preload])
     |> Repo.all()
   end
 
@@ -33,7 +33,7 @@ defmodule Bank.Transactions do
   """
   def get!(id, opts \\ []) do
     Transaction
-    |> maybe_preload(opts[:preload])
+    |> QueryComposer.maybe_preload(opts[:preload])
     |> Repo.get!(id)
   end
 
@@ -45,7 +45,7 @@ defmodule Bank.Transactions do
   def get_by_idempotency_key(key, opts \\ []) do
     Transaction
     |> where(idempotency_key: ^key)
-    |> maybe_preload(opts[:preload])
+    |> QueryComposer.maybe_preload(opts[:preload])
     |> Repo.one()
   end
 
@@ -129,10 +129,4 @@ defmodule Bank.Transactions do
   """
   def update_status(%Transaction{} = transaction, status),
     do: update_transaction(transaction, %{status: status})
-
-  # Private functions
-
-  defp maybe_preload(query, nil), do: query
-  defp maybe_preload(query, []), do: query
-  defp maybe_preload(query, preloads), do: preload(query, ^preloads)
 end

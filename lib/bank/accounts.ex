@@ -24,7 +24,7 @@ defmodule Bank.Accounts do
   def list_accounts(opts \\ []) do
     Account
     |> QueryComposer.compose(opts)
-    |> maybe_preload(opts[:preload])
+    |> QueryComposer.maybe_preload(opts[:preload])
     |> Repo.all()
   end
 
@@ -36,7 +36,7 @@ defmodule Bank.Accounts do
   @spec get_account!(UUID.t(), keyword()) :: Schema.t()
   def get_account!(id, opts \\ []) do
     Account
-    |> maybe_preload(opts[:preload])
+    |> QueryComposer.maybe_preload(opts[:preload])
     |> Repo.get!(id)
   end
 
@@ -47,7 +47,7 @@ defmodule Bank.Accounts do
   def get_account_by_number(account_number, opts \\ []) do
     Account
     |> where(account_number: ^account_number)
-    |> maybe_preload(opts[:preload])
+    |> QueryComposer.maybe_preload(opts[:preload])
     |> Repo.one()
   end
 

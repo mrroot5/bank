@@ -33,7 +33,7 @@ defmodule Bank.Ledgers do
     |> QueryComposer.compose(opts)
     |> QueryComposer.filter_by_date_range(opts)
     |> order_by(^(opts[:order_by] || [desc: :inserted_at]))
-    |> maybe_preload(opts[:preload])
+    |> QueryComposer.maybe_preload(opts[:preload])
     |> Repo.all()
   end
 
@@ -44,7 +44,7 @@ defmodule Bank.Ledgers do
   """
   def get_ledger!(id, opts \\ []) do
     Ledger
-    |> maybe_preload(opts[:preload])
+    |> QueryComposer.maybe_preload(opts[:preload])
     |> Repo.get!(id)
   end
 
@@ -103,9 +103,4 @@ defmodule Bank.Ledgers do
       :credit
     end
   end
-
-  # Private functions
-  defp maybe_preload(query, nil), do: query
-  defp maybe_preload(query, []), do: query
-  defp maybe_preload(query, preloads), do: preload(query, ^preloads)
 end

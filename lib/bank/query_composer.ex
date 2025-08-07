@@ -55,6 +55,15 @@ defmodule Bank.QueryComposer do
   def filter_by_date_range(query, opts) when is_list(opts),
     do: do_filter_by_date_range(query, opts[:from_date], opts[:to_date], opts[:date_field])
 
+  @spec maybe_preload(Query.t(), []) :: Query.t()
+  def maybe_preload(query, nil), do: query
+  def maybe_preload(query, []), do: query
+  def maybe_preload(query, preloads), do: preload(query, ^preloads)
+
+  #
+  # Private function
+  #
+
   defp date_field_default(nil), do: :inserted_at
   defp date_field_default(field) when is_atom(field), do: field
 
