@@ -64,25 +64,36 @@ defmodule Bank.Accounts do
   """
   @spec create(map()) :: EctoUtils.write()
   def create(attrs \\ %{}) do
+    {:ok, account_number} = create_account_number()
+    defaults_changeset = Account.defaults_changeset(%Account{}, attrs)
+
+    attrs =
+      attrs
+      |> Map.put_new(:account_number, account_number)
+      |> maybe_set_name(defaults_changeset.data)
+
     changeset = Account.changeset(%Account{}, attrs)
 
     if changeset.valid? do
-      account_number = generate_account_number()
-
-      new_attrs = %{
-        account_number: account_number,
-        iban: IBANGenerator.generate(account_number: account_number),
-        swift: SWIFTGenerator.generate()
-      }
-
-      attrs = Map.merge(new_attrs, attrs)
+      attrs_with_meta =
+        account_number
+        |> create_metadata()
+        |> Map.merge(attrs)
 
       changeset
-      |> Account.changeset(attrs)
+      |> Account.changeset(attrs_with_meta)
       |> Repo.insert()
     else
       changeset
     end
+  end
+
+  @spec create_metadata(String.t()) :: map()
+  def create_metadata(account_number) do
+    %{
+      iban: IBANGenerator.generate(account_number: account_number),
+      swift: SWIFTGenerator.generate()
+    }
   end
 
   @doc """
@@ -146,13 +157,32 @@ defmodule Bank.Accounts do
   def reactivate_account(%Account{}), do: {:error, :invalid_status}
 
   # Private functions
+  @spec create_account_number(pos_integer()) :: String.t()
+  def create_account_number(attempts \\ 10) do
+    account_number = do_create_account_number()
+    changeset = Account.account_number_changeset(%Account{}, %{account_number: account_number})
 
-  @spec generate_account_number :: String.t()
-  defp generate_account_number,
-    do: Enum.map_join(1..10, fn _ -> :rand.uniform(10) - 1 end)
+    cond do
+      changeset.valid? -> {:ok, account_number}
+      attempts < 0 -> {:error, "Max attempts"}
+      true -> create_account_number(attempts - 1)
+    end
+  end
 
-  @spec maybe_preload(Ecto.Query.t(), []) :: Ecto.Query.t()
-  defp maybe_preload(query, nil), do: query
-  defp maybe_preload(query, []), do: query
-  defp maybe_preload(query, preloads), do: preload(query, ^preloads)
+  @spec do_create_account_number :: String.t()
+  defp do_create_account_number do
+    # Generate 10 random  digits
+    :crypto.strong_rand_bytes(5)
+    |> :binary.decode_unsigned()
+    |> rem(10_000_000_000)
+    |> Integer.to_string()
+    |> String.pad_leading(10, "0")
+  end
+
+  @spec maybe_set_name(map(), map()) :: map()
+  defp maybe_set_name(attrs, %{account_type: account_type}) do
+    name = Atom.to_string(account_type)
+
+    Map.put_new(attrs, :name, name)
+  end
 end

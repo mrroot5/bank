@@ -33,6 +33,15 @@ defmodule Bank.Accounts.Account do
     timestamps(type: :utc_datetime)
   end
 
+  @spec account_number_changeset(Schema.t() | Changeset.t(), map()) :: Changeset.t()
+  def account_number_changeset(data, attrs) do
+    data
+    |> cast(attrs, [:account_number])
+    |> validate_required([:account_number])
+    |> validate_format(:account_number, ~r/^[0-9]{10}$/)
+    |> unique_constraint(:account_number)
+  end
+
   @spec balance_changeset(Schema.t(), integer()) :: Changeset.t()
   def balance_changeset(account, new_balance),
     do: change(account, balance: new_balance, balance_updated_at: DateTime.utc_now())
@@ -41,24 +50,33 @@ defmodule Bank.Accounts.Account do
   def changeset(account, attrs) do
     account
     |> cast(attrs, [
-      :account_number,
       :account_type,
       :currency,
-      :metadata,
       :name,
       :status,
       :user_id
     ])
     |> cast_embed(:metadata, with: &AccountMetadata.changeset/2)
-    |> validate_required([:account_number, :account_type, :currency, :name, :user_id])
+    |> account_number_changeset(attrs)
+    |> validate_required([:account_type, :currency, :name, :user_id])
     |> validate_inclusion(:account_type, @account_types)
     |> validate_inclusion(:status, @account_statuses)
     |> validate_length(:currency, is: 3)
     |> validate_number(:balance, greater_than_or_equal_to: Decimal.new("-1000"))
-    |> validate_format(:account_number, ~r/^[A-Z0-9]{10,20}$/)
     |> prevent_currency_update(account)
-    |> unique_constraint(:account_number)
     |> foreign_key_constraint(:user_id)
+  end
+
+  @spec defaults_changeset(Schema.t(), map()) :: Changeset.t()
+  def defaults_changeset(account, attrs) do
+    account
+    |> cast(attrs, [
+      :account_type,
+      :currency,
+      :status,
+      :user_id
+    ])
+    |> cast_embed(:metadata, with: &AccountMetadata.changeset/2)
   end
 
   @spec prevent_currency_update(Changeset.t(), map()) :: Changeset.t()
