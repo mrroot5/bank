@@ -17,7 +17,6 @@ defmodule Bank.Transactions.Transaction do
   alias Ecto.Changeset
   alias Ecto.Schema
 
-  @origin ~w(app external web)a
   @transaction_types ~w(deposit withdrawal transfer fee_charge interest_payment)a
   @transaction_statuses ~w(pending processing completed failed cancelled)a
 
@@ -26,7 +25,6 @@ defmodule Bank.Transactions.Transaction do
     field :currency, :string
     field :description, :string
     field :idempotency_key, :string
-    field :origin, Ecto.Enum, values: @origin, default: :web
     field :status, Ecto.Enum, values: @transaction_statuses, default: :pending
     field :transaction_type, Ecto.Enum, values: @transaction_types
 
@@ -51,8 +49,7 @@ defmodule Bank.Transactions.Transaction do
       :account_id
     ])
     |> cast_embed(:metadata, with: &TransactionMetadata.changeset/2)
-    |> validate_required([:amount, :currency, :description, :transaction_type])
-    |> validate_inclusion(:origin, @origin)
+    |> validate_required([:amount, :currency, :description, :idempotency_key, :transaction_type])
     |> validate_inclusion(:transaction_type, @transaction_types)
     |> validate_inclusion(:status, @transaction_statuses)
     |> validate_length(:currency, is: 3)

@@ -37,13 +37,29 @@ defmodule Bank.Transactions do
   end
 
   @doc """
+  Get by whatever field you want
+  """
+  @spec get_by(map() | keyword(), keyword()) :: Schema.t()
+  def get_by(clauses, opts \\ []) do
+    Account
+    |> QueryComposer.maybe_preload(opts[:preload])
+    |> Repo.get_by(clauses)
+  end
+
+  @doc """
   Gets a transaction by idempotency key.
 
   Returns nil if not found.
   """
   def get_by_idempotency_key(key, opts \\ []) do
+    compose_filters = [
+      {"eq", :idempotency_key, key},
+      {"eq", :status, :pending},
+      {"eq", :status, :processing}
+    ]
+
     Transaction
-    |> where(idempotency_key: ^key)
+    |> QueryComposer.compose(compose_filters)
     |> QueryComposer.maybe_preload(opts[:preload])
     |> Repo.one()
   end
@@ -68,7 +84,10 @@ defmodule Bank.Transactions do
   end
 
   defp do_create(attrs) do
-    # FIXME create an idempotency_key automatically
+    idempotency_key = create_idempotency_key(attrs)
+
+    attrs = Map.put_new(attrs, :idempotency_key, idempotency_key)
+
     %Transaction{}
     |> Transaction.changeset(attrs)
     |> Repo.insert()
@@ -99,7 +118,7 @@ defmodule Bank.Transactions do
 
       with {:ok, updated_transaction} <- transaction_result,
            {:ok, ledger} <- Ledgers.create_ledger(ledger_attrs),
-           {:ok, updated_account} <- Accounts.update_balance(account, transaction.amount) do
+           {:ok, updated_account} <- Accounts.update(account, %{amount: transaction.amount}) do
         {:ok, {updated_transaction, ledger, updated_account}}
       end
     end)
@@ -130,4 +149,15 @@ defmodule Bank.Transactions do
   """
   def update_status(%Transaction{} = transaction, status),
     do: update_transaction(transaction, %{status: status})
+
+  @doc """
+  Generates a unique idempotency key for a transaction using account_id, amount, and currency.
+  """
+  @spec create_idempotency_key(map()) :: String.t()
+  def create_idempotency_key(%{account_id: account_id, amount: amount, currency: currency}) do
+    base = "#{account_id}|#{Decimal.to_string(amount)}|#{currency}"
+
+    :crypto.hash(:sha256, base)
+    |> Base.encode16(case: :lower)
+  end
 end
