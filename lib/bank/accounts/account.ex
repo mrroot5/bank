@@ -15,11 +15,13 @@ defmodule Bank.Accounts.Account do
   @account_statuses ~w(active suspended closed)a
 
   schema "accounts" do
+    field :account_number, :string
     field :account_type, Ecto.Enum, values: @account_types, default: :checking
     # Real-time balance (updated when ledger entries are created)
     field :balance, :decimal, default: Decimal.new("0.000000")
     field :balance_updated_at, :utc_datetime
     field :currency, :string, default: "EUR"
+    field :name, :string
     field :status, Ecto.Enum, values: @account_statuses, default: :active
 
     embeds_one :metadata, AccountMetadata, on_replace: :update

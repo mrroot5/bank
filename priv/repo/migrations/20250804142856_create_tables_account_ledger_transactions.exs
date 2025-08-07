@@ -12,17 +12,20 @@ defmodule Bank.Repo.Migrations.CreateTablesAccountLedgerTransactions do
     #
     create_if_not_exists table(:accounts, primary_key: false) do
       add :id, :binary_id, primary_key: true
+      add :account_number, :string, null: false
       add :account_type, :string, null: false
       add :balance, :decimal, precision: 18, scale: 6, default: 0.000000
       add :balance_updated_at, :utc_datetime, default: fragment("NOW()")
       add :currency, :string, null: false, default: "EUR"
       add :metadata, :map, default: %{}
+      add :name, :string, null: false
       add :status, :string, null: false, default: "active"
       add :user_id, references(:users, type: :binary_id, on_delete: :restrict), null: false
 
       timestamps(type: :utc_datetime)
     end
 
+    create_if_not_exists unique_index(:accounts, :account_number)
     create_if_not_exists unique_index(:accounts, [:account_type, :currency, :user_id])
     # Fast lookup to find an active account type
     create_if_not_exists index(:accounts, [:account_type, :status, :user_id])
