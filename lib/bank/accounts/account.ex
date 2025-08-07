@@ -30,7 +30,7 @@ defmodule Bank.Accounts.Account do
     has_many :ledgers, Ledger
     has_many :transactions, Transaction
 
-    timestamps(type: :utc_datetime)
+    timestamps()
   end
 
   @spec account_number_changeset(Schema.t() | Changeset.t(), map()) :: Changeset.t()

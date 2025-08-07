@@ -17,7 +17,7 @@ defmodule Bank.Ledgers.Ledger do
     belongs_to :account, Account
     belongs_to :transaction, Transaction
 
-    timestamps(type: :utc_datetime, updated_at: false)
+    timestamps(updated_at: false)
   end
 
   @spec changeset(Ecto.Schema.t(), map()) :: Ecto.Changeset.t()

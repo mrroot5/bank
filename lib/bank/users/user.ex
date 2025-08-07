@@ -27,7 +27,7 @@ defmodule Bank.Users.User do
 
     has_many :accounts, Account
 
-    timestamps(type: :utc_datetime)
+    timestamps()
   end
 
   @spec changeset(Ecto.Schema.t(), map()) :: Ecto.Changeset.t()

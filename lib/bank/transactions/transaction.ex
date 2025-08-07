@@ -35,7 +35,7 @@ defmodule Bank.Transactions.Transaction do
     belongs_to :account, Account, foreign_key: :account_id
     has_many :ledgers, Ledger, foreign_key: :transaction_id
 
-    timestamps(type: :utc_datetime)
+    timestamps()
   end
 
   @spec changeset(Schema.t(), map()) :: Changeset.t()
