@@ -42,15 +42,12 @@ defmodule Bank.Accounts.Account do
     |> unique_constraint(:account_number)
   end
 
-  @spec balance_changeset(Schema.t(), integer()) :: Changeset.t()
-  def balance_changeset(account, new_balance),
-    do: change(account, balance: new_balance, balance_updated_at: DateTime.utc_now())
-
   @spec changeset(Schema.t(), map()) :: Changeset.t()
   def changeset(account, attrs) do
     account
     |> cast(attrs, [
       :account_type,
+      :balance,
       :currency,
       :name,
       :status,
@@ -58,7 +55,7 @@ defmodule Bank.Accounts.Account do
     ])
     |> cast_embed(:metadata, with: &AccountMetadata.changeset/2)
     |> account_number_changeset(attrs)
-    |> validate_required([:account_type, :currency, :name, :user_id])
+    |> validate_required([:account_type, :balance, :currency, :name, :user_id])
     |> validate_inclusion(:account_type, @account_types)
     |> validate_inclusion(:status, @account_statuses)
     |> validate_length(:currency, is: 3)
