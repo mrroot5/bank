@@ -10,7 +10,7 @@ defmodule Bank.Transactions.Transaction do
   - International transactions.
   - External transactions services (PayPal, etc.).
   """
-  use Bank.Schema
+  use Bank.Ecto.Schema
   alias Bank.Accounts.Account
   alias Bank.Ledgers.Ledger
   alias Bank.Transactions.TransactionMetadata

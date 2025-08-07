@@ -2,7 +2,7 @@ defmodule Bank.Accounts.Account do
   @moduledoc """
   Bank account that holds balances.
   """
-  use Bank.Schema
+  use Bank.Ecto.Schema
 
   alias Bank.Accounts.AccountMetadata
   alias Bank.Ledgers.Ledger

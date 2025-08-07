@@ -2,7 +2,7 @@ defmodule Bank.Accounts.AccountMetadata do
   @moduledoc """
   Embedded schema for flexible Account metadata.
   """
-  use Bank.Schema
+  use Bank.Ecto.Schema
 
   @primary_key false
   embedded_schema do

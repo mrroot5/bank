@@ -1,4 +1,4 @@
-defmodule Bank.EctoUtils do
+defmodule Bank.Ecto.Utils do
   @moduledoc """
   A simple module to help with ecto repetitive tasks or common code across all the project.
   """

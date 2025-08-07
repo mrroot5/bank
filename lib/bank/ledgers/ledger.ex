@@ -4,7 +4,7 @@ defmodule Bank.Ledgers.Ledger do
 
   This table contains immediate transactions, like ATM or other completed transactions.
   """
-  use Bank.Schema
+  use Bank.Ecto.Schema
   alias Bank.Accounts.Account
   alias Bank.Transactions.Transaction
 

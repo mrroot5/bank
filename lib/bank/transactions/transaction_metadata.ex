@@ -2,7 +2,7 @@ defmodule Bank.Transactions.TransactionMetadata do
   @moduledoc """
   Embedded schema for flexible transaction metadata.
   """
-  use Bank.Schema
+  use Bank.Ecto.Schema
 
   @initiated_by_types ~w(admin system user)a
 

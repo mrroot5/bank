@@ -6,7 +6,7 @@ defmodule Bank.Users.User do
 
   Generated with Phoenix.
   """
-  use Bank.Schema
+  use Bank.Ecto.Schema
 
   alias Bank.Accounts.Account
 

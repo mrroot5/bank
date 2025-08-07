@@ -5,7 +5,7 @@ defmodule Bank.Users do
 
   import Ecto.Query, warn: false
 
-  alias Bank.EctoUtils
+  alias Bank.Ecto.Utils, as: EctoUtils
   alias Bank.Repo
   alias Bank.Users.User
   alias Bank.Users.UserNotifier
