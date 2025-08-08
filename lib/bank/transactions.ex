@@ -96,10 +96,9 @@ defmodule Bank.Transactions do
   @doc """
   Completes a transaction.
   """
-  @spec complete(Ectho.Schema.t(), String.t(), map()) :: {:ok, tuple()}
+  @spec complete(Ectho.Schema.t(), map()) :: {:ok, tuple()}
   def complete(
         %Transaction{} = transaction,
-        completed_by \\ "system",
         metadata \\ %{}
       ) do
     Repo.transact(fn ->
