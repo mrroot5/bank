@@ -49,6 +49,16 @@ defmodule Bank.Ledgers do
   end
 
   @doc """
+  Get by whatever field you want
+  """
+  @spec get_by(map() | keyword(), keyword()) :: Schema.t()
+  def get_by(clauses, opts \\ []) do
+    Ledger
+    |> QueryComposer.maybe_preload(opts[:preload])
+    |> Repo.get_by(clauses)
+  end
+
+  @doc """
   Creates a ledger entry.
 
   Ledger entries are immutable once created.
