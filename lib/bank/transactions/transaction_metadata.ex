@@ -9,6 +9,7 @@ defmodule Bank.Transactions.TransactionMetadata do
   @primary_key false
   embedded_schema do
     field :completed_by, :string
+    field :completed_at, :utc_datetime_usec
 
     # Failure tracking
     field :failed_at, :utc_datetime_usec
@@ -22,8 +23,6 @@ defmodule Bank.Transactions.TransactionMetadata do
       values: @initiated_by_types,
       default: nil
 
-    field :processed_at, :utc_datetime_usec
-
     # External origin tracking
     # e.g., PayPal, Stripe, etc.
     field :origin_external, :string
@@ -36,6 +35,7 @@ defmodule Bank.Transactions.TransactionMetadata do
     metadata
     |> cast(attrs, [
       :completed_by,
+      :completed_at,
       :failed_at,
       :failure_code,
       :failure_reason,
