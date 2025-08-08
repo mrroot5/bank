@@ -9,7 +9,6 @@ defmodule Bank.Transactions do
   import Ecto.Query, warn: false
   alias Bank.Repo
   alias Bank.Transactions.Transaction
-  alias Bank.Accounts
   alias Bank.Ledgers
   alias Bank.QueryComposer
 
@@ -18,7 +17,7 @@ defmodule Bank.Transactions do
   """
   def list(opts \\ []) do
     Transaction
-    |> QueryComposer.compose(opts)
+    |> QueryComposer.compose(opts[:filters])
     |> QueryComposer.filter_by_date_range(opts)
     |> order_by(^(opts[:order_by] || [desc: :inserted_at]))
     |> QueryComposer.maybe_preload(opts[:preload])
@@ -41,7 +40,7 @@ defmodule Bank.Transactions do
   """
   @spec get_by(map() | keyword(), keyword()) :: Schema.t()
   def get_by(clauses, opts \\ []) do
-    Account
+    Transaction
     |> QueryComposer.maybe_preload(opts[:preload])
     |> Repo.get_by(clauses)
   end
@@ -51,11 +50,12 @@ defmodule Bank.Transactions do
 
   Returns nil if not found.
   """
-  def get_by_idempotency_key(key, opts \\ []) do
+  def get_by_idempotency_key(key, account_id, opts \\ []) do
     compose_filters = [
       {"eq", :idempotency_key, key},
+      {"eq", :account_id, account_id},
       {"eq", :status, :pending},
-      {"eq", :status, :processing}
+      {"or_eq", :status, :processing}
     ]
 
     Transaction
@@ -76,7 +76,7 @@ defmodule Bank.Transactions do
         do_create(attrs)
 
       key ->
-        case get_by_idempotency_key(key) do
+        case get_by_idempotency_key(key, attrs[:account_id]) do
           nil -> do_create(attrs)
           existing -> {:ok, existing}
         end
