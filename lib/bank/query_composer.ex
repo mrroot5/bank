@@ -20,10 +20,15 @@ defmodule Bank.QueryComposer do
   - Filter by offset.
   """
   @spec compose(Query.t(), filters_where() | filters_others()) :: Query.t()
+  def compose(query, nil), do: query
+
   def compose(query, filters) when is_list(filters) do
     Enum.reduce(filters, query, fn
       {"eq", field_name, value}, query ->
         where(query, [t], field(t, ^field_name) == ^value)
+
+      {"or_eq", field_name, value}, query ->
+        or_where(query, [t], field(t, ^field_name) == ^value)
 
       {"gte", field_name, value}, query ->
         where(query, [t], field(t, ^field_name) == ^value)
