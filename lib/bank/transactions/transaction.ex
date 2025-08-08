@@ -60,7 +60,7 @@ defmodule Bank.Transactions.Transaction do
   @spec complete_changeset(Schema.t(), binary(), map()) :: Changeset.t()
   def complete_changeset(transaction, completed_by \\ "system", metadata_override \\ %{}) do
     metadata =
-      %TransactionMetadata{
+      %{
         completed_by: completed_by,
         processed_at: DateTime.utc_now()
       }
@@ -72,7 +72,7 @@ defmodule Bank.Transactions.Transaction do
 
   @spec fail_changeset(Schema.t(), binary(), binary() | nil, map()) :: Changeset.t()
   def fail_changeset(transaction, reason, error_code \\ nil, metadata_override \\ %{}) do
-    metadata = %TransactionMetadata{
+    metadata = %{
       failed_at: DateTime.utc_now(),
       failure_code: error_code,
       failure_reason: reason

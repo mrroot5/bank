@@ -12,7 +12,6 @@ defmodule Bank.Accounts do
   alias Bank.Accounts.Account
   alias Bank.Accounts.IBANGenerator
   alias Bank.Accounts.SWIFTGenerator
-  alias Bank.Accounts.AccountMetadata
   alias Bank.QueryComposer
   alias Bank.Repo
   alias Ecto.Schema

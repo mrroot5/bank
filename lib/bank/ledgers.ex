@@ -28,7 +28,7 @@ defmodule Bank.Ledgers do
     * `:limit` - Maximum number of results
     * `:offset` - Number of results to skip
   """
-  def list_ledgers(opts \\ %{}) do
+  def list(opts \\ []) do
     Ledger
     |> QueryComposer.compose(opts)
     |> QueryComposer.filter_by_date_range(opts)
@@ -42,7 +42,7 @@ defmodule Bank.Ledgers do
 
   Raises `Ecto.NoResultsError` if the Ledger does not exist.
   """
-  def get_ledger!(id, opts \\ []) do
+  def get!(id, opts \\ []) do
     Ledger
     |> QueryComposer.maybe_preload(opts[:preload])
     |> Repo.get!(id)
@@ -55,52 +55,15 @@ defmodule Bank.Ledgers do
 
   ## Examples
 
-      iex> create_ledger(%{field: value})
+      iex> create(%{field: value})
       {:ok, %Ledger{}}
 
-      iex> create_ledger(%{field: bad_value})
+      iex> create(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
   """
-  def create_ledger(attrs \\ %{}) do
+  def create(attrs \\ %{}) do
     %Ledger{}
     |> Ledger.changeset(attrs)
     |> Repo.insert()
-  end
-
-  @doc """
-  Returns daily balance summary for an account.
-  """
-  def daily_balance_summary(account_id, from_date, to_date) do
-    from(l in Ledger,
-      where: l.account_id == ^account_id,
-      where: fragment("DATE(?)", l.inserted_at) >= ^from_date,
-      where: fragment("DATE(?)", l.inserted_at) <= ^to_date,
-      group_by: fragment("DATE(?)", l.inserted_at),
-      select: %{
-        date: fragment("DATE(?)", l.inserted_at),
-        credits: filter(sum(l.amount), l.entry_type == :credit),
-        debits: filter(sum(l.amount), l.entry_type == :debit),
-        net:
-          sum(
-            fragment(
-              "CASE WHEN ? = 'credit' THEN ? ELSE -? END",
-              l.entry_type,
-              l.amount,
-              l.amount
-            )
-          )
-      },
-      order_by: [asc: fragment("DATE(?)", l.inserted_at)]
-    )
-    |> Repo.all()
-  end
-
-  @spec infer_entry_type(Decimal.t()) :: :credit | :debit
-  def infer_entry_type(amount) do
-    if Decimal.negative?(%Decimal{} = amount) do
-      :debit
-    else
-      :credit
-    end
   end
 end
