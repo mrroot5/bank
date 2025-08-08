@@ -1,4 +1,4 @@
-.PHONY: bash credo dialyzer iex logs-web recode start tests
+.PHONY: bash credo dialyzer iex logs-web recode restart-web rm start stop tests
 
 ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 $(eval $(ARGS):;@:)
@@ -24,8 +24,17 @@ logs-web:
 recode:
 	docker compose exec web mix recode --no-dry
 
+restart-web:
+	@docker compose restart web
+
+rm:
+	@docker compose rm -f
+
 start:
 	@docker compose up -d
+
+stop:
+	@docker compose stop
 
 tests:
 	@docker compose -f docker-compose-test.yml run --rm web_test mix test --warnings-as-errors $(ARGS)

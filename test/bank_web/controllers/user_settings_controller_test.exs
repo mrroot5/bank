@@ -5,6 +5,8 @@ defmodule BankWeb.UserSettingsControllerTest do
 
   alias Bank.Users
 
+  @new_valid_password "New valid passw0rd!"
+
   setup :register_and_log_in_user
 
   describe "GET /users/settings" do
@@ -28,8 +30,8 @@ defmodule BankWeb.UserSettingsControllerTest do
           "action" => "update_password",
           "current_password" => valid_user_password(),
           "user" => %{
-            "password" => "new valid password",
-            "password_confirmation" => "new valid password"
+            "password" => @new_valid_password,
+            "password_confirmation" => @new_valid_password
           }
         })
 
@@ -40,7 +42,7 @@ defmodule BankWeb.UserSettingsControllerTest do
       assert Phoenix.Flash.get(new_password_conn.assigns.flash, :info) =~
                "Password updated successfully"
 
-      assert Users.get_user_by_email_and_password(user.email, "new valid password")
+      assert Users.get_user_by_email_and_password(user.email, @new_valid_password)
     end
 
     test "does not update password on invalid data", %{conn: conn} do
