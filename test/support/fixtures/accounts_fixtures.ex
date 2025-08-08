@@ -7,10 +7,9 @@ defmodule Bank.AccountsFixtures do
 
   def account_fixture(attrs \\ %{}) do
     user = Map.get(attrs, :user) || Bank.UsersFixtures.user_fixture()
-    {:ok, account_number} = Bank.Accounts.create_account_number()
 
     default_attrs = %{
-      account_number: account_number,
+      account_number: "3171377546",
       account_type: :checking,
       currency: "EUR",
       name: "Test Account",
