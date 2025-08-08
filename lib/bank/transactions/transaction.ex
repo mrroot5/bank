@@ -53,6 +53,7 @@ defmodule Bank.Transactions.Transaction do
     |> validate_inclusion(:transaction_type, @transaction_types)
     |> validate_inclusion(:status, @transaction_statuses)
     |> validate_length(:currency, is: 3)
+    |> validate_number(:amount, greater_than: Decimal.new("0.0"))
     |> unique_constraint(:idempotency_key)
     |> foreign_key_constraint(:account_id)
   end
