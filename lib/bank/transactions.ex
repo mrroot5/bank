@@ -96,31 +96,28 @@ defmodule Bank.Transactions do
   @doc """
   Completes a transaction.
   """
+  @spec complete(Ectho.Schema.t(), String.t(), map()) :: {:ok, tuple()}
   def complete(
         %Transaction{} = transaction,
         completed_by \\ "system",
         metadata \\ %{}
       ) do
     Repo.transact(fn ->
-      transaction_result =
+      {:ok, updated_transaction} =
         transaction
-        |> Transaction.complete_changeset(completed_by, metadata)
+        |> Transaction.complete_changeset(metadata)
         |> Repo.update()
 
       ledger_attrs = %{
         account_id: transaction.account_id,
         amount: transaction.amount,
-        entry_type: Ledgers.infer_entry_type(transaction.amount),
+        entry_type: infer_ledger_entry_type(transaction.transaction_type),
         transaction_id: transaction.id
       }
 
-      account = Accounts.get!(transaction.account_id)
+      {:ok, {ledger, account}} = Ledgers.create(ledger_attrs)
 
-      with {:ok, updated_transaction} <- transaction_result,
-           {:ok, ledger} <- Ledgers.create_ledger(ledger_attrs),
-           {:ok, updated_account} <- Accounts.update(account, %{amount: transaction.amount}) do
-        {:ok, {updated_transaction, ledger, updated_account}}
-      end
+      {:ok, {updated_transaction, ledger, account}}
     end)
   end
 
@@ -160,4 +157,11 @@ defmodule Bank.Transactions do
     :crypto.hash(:sha256, base)
     |> Base.encode16(case: :lower)
   end
+
+  @spec infer_ledger_entry_type(atom()) :: :credit | :debit
+  defp infer_ledger_entry_type(transaction_types)
+       when transaction_types in [:deposit, :interest_payment],
+       do: :credit
+
+  defp infer_ledger_entry_type(_transaction_types), do: :debit
 end

@@ -8,9 +8,11 @@ defmodule Bank.Ledgers do
   """
 
   import Ecto.Query, warn: false
-  alias Bank.Repo
-  alias Bank.Ledgers.Ledger
+
+  alias Bank.Accounts
   alias Bank.QueryComposer
+  alias Bank.Ledgers.Ledger
+  alias Bank.Repo
 
   @doc """
   Returns the list of ledger entries.
@@ -72,8 +74,29 @@ defmodule Bank.Ledgers do
       {:error, %Ecto.Changeset{}}
   """
   def create(attrs \\ %{}) do
-    %Ledger{}
-    |> Ledger.changeset(attrs)
-    |> Repo.insert()
+    Repo.transact(fn ->
+      {:ok, ledger} =
+        %Ledger{}
+        |> Ledger.changeset(attrs)
+        |> Repo.insert()
+
+      account = Accounts.get!(ledger.account_id)
+      new_balance = calculate_new_balance(ledger, account.balance)
+
+      {:ok, updated_account} =
+        Accounts.update_account(account, %{balance: new_balance})
+
+      {:ok, {ledger, updated_account}}
+    end)
+  end
+
+  @spec calculate_new_balance(Schema.t(), Decimal.t()) :: Decimal.t()
+  defp calculate_new_balance(%{amount: amount, entry_type: :credit}, balance),
+    do: Decimal.add(balance, amount)
+
+  defp calculate_new_balance(%{amount: amount, entry_type: :debit}, balance) do
+    amount
+    |> Decimal.negate()
+    |> Decimal.add(balance)
   end
 end
