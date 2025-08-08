@@ -1,8 +1,6 @@
 defmodule Bank.Repo.Migrations.CreateUsersAuthTables do
   use Ecto.Migration
 
-  @timestamps_opts [type: :utc_datetime]
-
   def change do
     execute(
       "CREATE EXTENSION IF NOT EXISTS citext",
@@ -13,9 +11,9 @@ defmodule Bank.Repo.Migrations.CreateUsersAuthTables do
       add :id, :binary_id, primary_key: true
       add :email, :citext, null: false
       add :hashed_password, :string, null: false
-      add :confirmed_at, :utc_datetime
+      add :confirmed_at, :utc_datetime_usec
 
-      timestamps()
+      timestamps(type: :utc_datetime_usec)
     end
 
     create_if_not_exists unique_index(:users, [:email])
@@ -26,7 +24,7 @@ defmodule Bank.Repo.Migrations.CreateUsersAuthTables do
       add :context, :string, null: false
       add :sent_to, :string
 
-      timestamps(updated_at: false)
+      timestamps(type: :utc_datetime_usec, updated_at: false)
     end
 
     create_if_not_exists index(:users_tokens, [:user_id])

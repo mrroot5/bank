@@ -4,8 +4,6 @@ defmodule Bank.Repo.Migrations.CreateTablesAccountLedgerTransactions do
   """
   use Ecto.Migration
 
-  @timestamps_opts [type: :utc_datetime]
-
   def change do
     # Enable UUID extension if not exists
     execute("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"")
@@ -24,7 +22,7 @@ defmodule Bank.Repo.Migrations.CreateTablesAccountLedgerTransactions do
       add :status, :string, null: false, default: "active"
       add :user_id, references(:users, type: :binary_id, on_delete: :restrict), null: false
 
-      timestamps()
+      timestamps(type: :utc_datetime_usec)
     end
 
     create_if_not_exists unique_index(:accounts, :account_number)
@@ -61,7 +59,7 @@ defmodule Bank.Repo.Migrations.CreateTablesAccountLedgerTransactions do
       add :transaction_type, :string, null: false
       add :account_id, references(:accounts, type: :binary_id, on_delete: :restrict), null: false
 
-      timestamps()
+      timestamps(type: :utc_datetime_usec)
     end
 
     create_if_not_exists unique_index(:transactions, [:idempotency_key])
@@ -81,7 +79,7 @@ defmodule Bank.Repo.Migrations.CreateTablesAccountLedgerTransactions do
       add :account_id, references(:accounts, type: :binary_id, on_delete: :restrict), null: false
       add :transaction_id, references(:transactions, type: :binary_id, on_delete: :restrict)
 
-      timestamps(updated_at: false)
+      timestamps(type: :utc_datetime_usec, updated_at: false)
     end
 
     create_if_not_exists index(:ledgers, [:account_id, :inserted_at])
