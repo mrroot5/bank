@@ -24,7 +24,7 @@ defmodule Bank.Users.UserToken do
     field :sent_to, :string
     belongs_to :user, Bank.Users.User, type: :binary_id
 
-    timestamps(type: :utc_datetime, updated_at: false)
+    timestamps(type: :utc_datetime_usec, updated_at: false)
   end
 
   @doc """

@@ -19,7 +19,7 @@ defmodule Bank.Accounts.Account do
     field :account_type, Ecto.Enum, values: @account_types, default: :checking
     # Real-time balance (updated when ledger entries are created)
     field :balance, :decimal, default: Decimal.new("0.000000")
-    field :balance_updated_at, :utc_datetime
+    field :balance_updated_at, :utc_datetime_usec
     field :currency, :string, default: "EUR"
     field :name, :string
     field :status, Ecto.Enum, values: @account_statuses, default: :active

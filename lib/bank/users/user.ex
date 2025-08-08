@@ -19,7 +19,7 @@ defmodule Bank.Users.User do
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :current_password, :string, virtual: true, redact: true
-    field :confirmed_at, :utc_datetime
+    field :confirmed_at, :utc_datetime_usec
 
     field :roles, {:array, Ecto.Enum},
       values: @roles,

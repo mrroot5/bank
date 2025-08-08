@@ -14,7 +14,7 @@ defmodule Bank.Ecto.Schema do
       #   type: :utc_datetime,
       #   autogenerate: {Bank.Ecto.Timestamps, :utc_now_seconds, []}
       # ]
-      @timestamps_opts [type: :utc_datetime]
+      @timestamps_opts [type: :utc_datetime_usec]
     end
   end
 end
