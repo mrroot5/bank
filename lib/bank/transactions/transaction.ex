@@ -58,12 +58,12 @@ defmodule Bank.Transactions.Transaction do
     |> foreign_key_constraint(:account_id)
   end
 
-  @spec complete_changeset(Schema.t(), binary(), map()) :: Changeset.t()
-  def complete_changeset(transaction, completed_by \\ "system", metadata_override \\ %{}) do
+  @spec complete_changeset(Schema.t(), map()) :: Changeset.t()
+  def complete_changeset(transaction, metadata_override \\ %{}) do
     metadata =
       %{
-        completed_by: completed_by,
-        processed_at: DateTime.utc_now()
+        completed_by: metadata_override[:completed_by] || "system",
+        completed_at: DateTime.utc_now()
       }
 
     transaction
