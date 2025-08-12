@@ -16,6 +16,8 @@ defmodule Bank.Transactions.TransactionMetadata do
     field :failure_code, :string
     field :failure_reason, :string
 
+    field :cancellation_reason, :string
+
     # Process tracking
     field :initiated_by_id, :binary_id
 
@@ -41,7 +43,6 @@ defmodule Bank.Transactions.TransactionMetadata do
       :failure_reason,
       :initiated_by_id,
       :initiated_by_type,
-      :processed_at,
       :origin_external,
       :origin_reference
     ])

@@ -10,9 +10,14 @@ defmodule Bank.Transactions.Transaction do
   - International transactions.
   - External transactions services (PayPal, etc.).
   """
+  import Ecto.Query
+
   use Bank.Ecto.Schema
+
   alias Bank.Accounts.Account
   alias Bank.Ledgers.Ledger
+  alias Bank.QueryComposer
+  alias Bank.Repo
   alias Bank.Transactions.TransactionMetadata
   alias Ecto.Changeset
   alias Ecto.Schema
@@ -24,7 +29,6 @@ defmodule Bank.Transactions.Transaction do
     field :amount, :decimal
     field :currency, :string
     field :description, :string
-    field :idempotency_key, :string
     field :status, Ecto.Enum, values: @transaction_statuses, default: :pending
     field :transaction_type, Ecto.Enum, values: @transaction_types
 
@@ -43,22 +47,25 @@ defmodule Bank.Transactions.Transaction do
       :amount,
       :currency,
       :description,
-      :idempotency_key,
       :status,
       :transaction_type,
       :account_id
     ])
     |> cast_embed(:metadata, with: &TransactionMetadata.changeset/2)
-    |> validate_required([:amount, :currency, :description, :idempotency_key, :transaction_type])
+    |> validate_required([:amount, :currency, :description, :transaction_type, :account_id])
     |> validate_inclusion(:transaction_type, @transaction_types)
     |> validate_inclusion(:status, @transaction_statuses)
     |> validate_length(:currency, is: 3)
     |> validate_number(:amount, greater_than: Decimal.new("0.0"))
-    |> unique_constraint(:idempotency_key)
+    |> validate_duplicates()
     |> foreign_key_constraint(:account_id)
   end
 
   @spec complete_changeset(Schema.t(), map()) :: Changeset.t()
+  @spec complete_changeset(%{
+          :__struct__ => atom() | %{:__changeset__ => any(), optional(any()) => any()},
+          optional(atom()) => any()
+        }) :: Ecto.Changeset.t()
   def complete_changeset(transaction, metadata_override \\ %{}) do
     metadata =
       %{
@@ -82,5 +89,48 @@ defmodule Bank.Transactions.Transaction do
     transaction
     |> change(status: :failed)
     |> put_embed(:metadata, Map.merge(metadata, metadata_override))
+  end
+
+  @spec do_duplicate_transaction?(map()) :: boolean()
+  defp do_duplicate_transaction?(changes) do
+    filters = [
+      {"eq", :amount, changes.amount},
+      {"eq", :currency, changes.currency},
+      {"eq", :transaction_type, changes.transaction_type},
+      {"eq", :account_id, changes.account_id},
+      {"eq", :status, :pending},
+      {"or_eq", :status, :processing}
+    ]
+
+    result =
+      __MODULE__
+      |> select([:amount, :currency, :transaction_type, :account_id])
+      |> QueryComposer.compose(filters)
+      |> Repo.all()
+
+    case result do
+      [] -> false
+      _ -> true
+    end
+  end
+
+  @spec duplicate_transaction?(Changeset.t()) :: boolean()
+  defp duplicate_transaction?(%{changes: changes}) do
+    required_keys = [:amount, :transaction_type, :currency, :account_id]
+
+    if Enum.all?(required_keys, &Map.has_key?(changes, &1)) do
+      do_duplicate_transaction?(changes)
+    else
+      false
+    end
+  end
+
+  @spec validate_duplicates(Changeset.t()) :: Changeset.t()
+  defp validate_duplicates(changeset) do
+    if duplicate_transaction?(changeset) do
+      Ecto.Changeset.add_error(changeset, :id, "duplicated transaction")
+    else
+      changeset
+    end
   end
 end

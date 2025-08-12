@@ -2,24 +2,29 @@ defmodule Bank.Transactions do
   @moduledoc """
   The Transactions context.
 
-  Handles financial transactions with idempotency, state management,
+  Handles financial transaction, state management,
   and atomic operations for maintaining data integrity.
   """
 
   import Ecto.Query, warn: false
-  alias Bank.Repo
-  alias Bank.Transactions.Transaction
+
+  alias Ecto.Changeset
+  alias Bank.Ecto.Utils, as: EctoUtils
   alias Bank.Ledgers
   alias Bank.QueryComposer
+  alias Bank.Repo
+  alias Bank.Transactions.Transaction
+  alias Ecto.Schema
 
   @doc """
   Returns the list of transactions.
   """
+  @spec list(keyword()) :: [Schema.t()]
   def list(opts \\ []) do
     Transaction
     |> QueryComposer.compose(opts[:filters])
     |> QueryComposer.filter_by_date_range(opts)
-    |> order_by(^(opts[:order_by] || [desc: :inserted_at]))
+    |> order_by(^(opts[:order_by] || [desc: :updated_at]))
     |> QueryComposer.maybe_preload(opts[:preload])
     |> Repo.all()
   end
@@ -46,48 +51,10 @@ defmodule Bank.Transactions do
   end
 
   @doc """
-  Gets a transaction by idempotency key.
-
-  Returns nil if not found.
+  Creates a transaction with support.
   """
-  def get_by_idempotency_key(key, account_id, opts \\ []) do
-    compose_filters = [
-      {"eq", :idempotency_key, key},
-      {"eq", :account_id, account_id},
-      {"eq", :status, :pending},
-      {"or_eq", :status, :processing}
-    ]
-
-    Transaction
-    |> QueryComposer.compose(compose_filters)
-    |> QueryComposer.maybe_preload(opts[:preload])
-    |> Repo.one()
-  end
-
-  @doc """
-  Creates a transaction with idempotency support.
-
-  If an idempotency_key is provided and a transaction with that key exists,
-  returns the existing transaction.
-  """
+  @spec create(map()) :: EctoUtils.write()
   def create(attrs \\ %{}) do
-    case Map.get(attrs, :idempotency_key) do
-      nil ->
-        do_create(attrs)
-
-      key ->
-        case get_by_idempotency_key(key, attrs[:account_id]) do
-          nil -> do_create(attrs)
-          existing -> {:ok, existing}
-        end
-    end
-  end
-
-  defp do_create(attrs) do
-    idempotency_key = create_idempotency_key(attrs)
-
-    attrs = Map.put_new(attrs, :idempotency_key, idempotency_key)
-
     %Transaction{}
     |> Transaction.changeset(attrs)
     |> Repo.insert()
@@ -96,13 +63,15 @@ defmodule Bank.Transactions do
   @doc """
   Completes a transaction.
   """
-  @spec complete(Ectho.Schema.t(), map()) :: {:ok, tuple()}
+  @spec complete(Schema.t(), map()) ::
+          {:ok, transaction :: Schema.t(), ledger :: Schema.t(), account :: Schema.t()}
+          | {:error, Changeset.t()}
   def complete(
         %Transaction{} = transaction,
         metadata \\ %{}
       ) do
     Repo.transact(fn ->
-      {:ok, updated_transaction} =
+      transaction_result =
         transaction
         |> Transaction.complete_changeset(metadata)
         |> Repo.update()
@@ -114,9 +83,10 @@ defmodule Bank.Transactions do
         transaction_id: transaction.id
       }
 
-      {:ok, {ledger, account}} = Ledgers.create(ledger_attrs)
-
-      {:ok, {updated_transaction, ledger, account}}
+      with {:ok, updated_transaction} <- transaction_result,
+           {:ok, {ledger, account}} <- Ledgers.create(ledger_attrs) do
+        {:ok, {updated_transaction, ledger, account}}
+      end
     end)
   end
 
@@ -145,17 +115,6 @@ defmodule Bank.Transactions do
   """
   def update_status(%Transaction{} = transaction, status),
     do: update_transaction(transaction, %{status: status})
-
-  @doc """
-  Generates a unique idempotency key for a transaction using account_id, amount, and currency.
-  """
-  @spec create_idempotency_key(map()) :: String.t()
-  def create_idempotency_key(%{account_id: account_id, amount: amount, currency: currency}) do
-    base = "#{account_id}|#{Decimal.to_string(amount)}|#{currency}"
-
-    :crypto.hash(:sha256, base)
-    |> Base.encode16(case: :lower)
-  end
 
   @spec infer_ledger_entry_type(atom()) :: :credit | :debit
   defp infer_ledger_entry_type(transaction_types)
