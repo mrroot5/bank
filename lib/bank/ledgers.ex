@@ -33,7 +33,7 @@ defmodule Bank.Ledgers do
   @spec list(keyword()) :: [Schema.t()]
   def list(opts \\ []) do
     Ledger
-    |> QueryComposer.compose(opts)
+    |> QueryComposer.compose(opts[:filters])
     |> QueryComposer.filter_by_date_range(opts)
     |> order_by(^(opts[:order_by] || [desc: :inserted_at]))
     |> QueryComposer.maybe_preload(opts[:preload])
