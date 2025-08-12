@@ -18,8 +18,8 @@ defmodule Bank.UsersFixtures do
     })
   end
 
-  @spec user_fixture(map()) :: Ecto.Schema.t()
-  def user_fixture(attrs \\ %{}) do
+  @spec fixture(map()) :: Ecto.Schema.t()
+  def fixture(attrs \\ %{}) do
     {:ok, user} =
       attrs
       |> valid_user_attributes()
