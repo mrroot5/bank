@@ -30,6 +30,7 @@ defmodule Bank.Ledgers do
     * `:limit` - Maximum number of results
     * `:offset` - Number of results to skip
   """
+  @spec list(keyword()) :: [Schema.t()]
   def list(opts \\ []) do
     Ledger
     |> QueryComposer.compose(opts)
@@ -75,18 +76,18 @@ defmodule Bank.Ledgers do
   """
   def create(attrs \\ %{}) do
     Repo.transact(fn ->
-      {:ok, ledger} =
+      ledger_result =
         %Ledger{}
         |> Ledger.changeset(attrs)
         |> Repo.insert()
 
-      account = Accounts.get!(ledger.account_id)
-      new_balance = calculate_new_balance(ledger, account.balance)
-
-      {:ok, updated_account} =
-        Accounts.update_account(account, %{balance: new_balance})
-
-      {:ok, {ledger, updated_account}}
+      with {:ok, ledger} <- ledger_result,
+           account <- Accounts.get!(ledger.account_id),
+           new_balance <- calculate_new_balance(ledger, account.balance),
+           {:ok, updated_account} <-
+             Accounts.update_account(account, %{balance: new_balance}) do
+        {:ok, {ledger, updated_account}}
+      end
     end)
   end
 
