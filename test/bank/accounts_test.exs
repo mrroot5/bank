@@ -199,7 +199,6 @@ defmodule Bank.AccountsTest do
       expected_errors = %{user_id: ["does not exist"]}
 
       assert expected_errors == errors
-      # assert "does not exist" in errors_on(changeset).user_id
     end
 
     test "handles account_number collision by retrying", %{user: user} do
@@ -450,5 +449,3 @@ defmodule Bank.AccountsTest do
     end
   end
 end
-
-# end

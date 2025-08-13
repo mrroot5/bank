@@ -73,25 +73,12 @@ defmodule Bank.Accounts.LedgersTest do
       from_date = DateTime.add(utc, -1, :day)
       to_date = utc
 
-      # Create ledger within date range
-      # {:ok, {ledger_in_range, _}} =
-      #   Ledgers.create(%{
-      #     account_id: account.id,
-      #     amount: Decimal.new("100.00"),
-      #     entry_type: :credit
-      #   })
-
       # Mock a ledger outside date range by updating timestamp
       _ledger_out_of_range =
         LedgersFixtures.fixture(%{
           account_id: account.id,
           inserted_at: DateTime.add(from_date, 1, :day)
         })
-
-      # Repo.update_all(
-      #   from(l in Ledger, where: l.id == ^ledger_out_of_range.id),
-      #   set: [inserted_at: ~U[2023-01-01 00:00:00Z]]
-      # )
 
       result = Ledgers.list(from_date: from_date, to_date: to_date)
       assert length(result) == length(ledger)
@@ -340,29 +327,4 @@ defmodule Bank.Accounts.LedgersTest do
       assert expected_error == errors_on(changeset)
     end
   end
-
-  # describe "updates" do
-  #   setup do
-  #     # Create a user for testing
-  #     user = insert(:user)
-
-  #     account =
-  #       Bank.AccountsFixtures.AccountsFixtures.fixture(%{
-  #         user: user,
-  #         name: "Ledgers account"
-  #       })
-
-  #     {:ok, user: user, account: account}
-  #   end
-
-  #   test "ledgers cannot be updated (trigger enforced)" do
-  #     ledger = insert!(:ledger, amount: Decimal.new("10.00"))
-
-  #     assert_raise Postgrex.Error, ~r/Ledger entries are immutable/, fn ->
-  #       ledger
-  #       |> Ecto.Changeset.change(amount: Decimal.new("20.00"))
-  #       |> Repo.update()
-  #     end
-  #   end
-  # end
 end
