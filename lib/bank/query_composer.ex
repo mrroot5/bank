@@ -31,10 +31,10 @@ defmodule Bank.QueryComposer do
         or_where(query, [t], field(t, ^field_name) == ^value)
 
       {"gte", field_name, value}, query ->
-        where(query, [t], field(t, ^field_name) == ^value)
+        where(query, [t], field(t, ^field_name) >= ^value)
 
       {"lte", field_name, value}, query ->
-        where(query, [t], field(t, ^field_name) == ^value)
+        where(query, [t], field(t, ^field_name) <= ^value)
 
       {"limit", limit}, query ->
         limit(query, ^limit)
