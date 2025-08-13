@@ -43,7 +43,7 @@ defmodule Bank.Accounts do
   @doc """
   Get by whatever field you want
   """
-  @spec get_by(map() | keyword(), keyword()) :: Schema.t()
+  @spec get_by(map() | keyword(), keyword()) :: Schema.t() | nil
   def get_by(clauses, opts \\ []) do
     Account
     |> QueryComposer.maybe_preload(opts[:preload])
@@ -63,7 +63,7 @@ defmodule Bank.Accounts do
   """
   @spec create(map()) :: EctoUtils.write()
   def create(attrs \\ %{}) do
-    {:ok, account_number} = create_account_number()
+    {:ok, account_number} = create_account_number(attrs)
     defaults_changeset = Account.defaults_changeset(%Account{}, attrs)
 
     attrs =
@@ -141,21 +141,26 @@ defmodule Bank.Accounts do
   def reactivate_account(%Account{}), do: {:error, :invalid_status}
 
   # Private functions
-  @spec create_account_number(pos_integer()) :: String.t()
-  def create_account_number(attempts \\ 10) do
-    account_number = do_create_account_number()
+
+  @doc """
+  Creates a unique account number.
+
+  Retries up to the specified number of attempts if duplicates are found.
+  """
+  @spec create_account_number(map(), non_neg_integer()) :: {:ok | :error, String.t()}
+  def create_account_number(attrs \\ %{}, attempts \\ 10) do
+    account_number = do_create_account_number(attrs[:account_number])
     changeset = Account.account_number_changeset(%Account{}, %{account_number: account_number})
 
     cond do
       changeset.valid? -> {:ok, account_number}
-      attempts < 0 -> {:error, "Max attempts"}
-      true -> create_account_number(attempts - 1)
+      attempts <= 0 -> {:error, "Max attempts"}
+      true -> create_account_number(attrs, attempts - 1)
     end
   end
 
-  @spec do_create_account_number :: String.t()
-  defp do_create_account_number do
-    # Generate 10 random  digits
+  @spec do_create_account_number(String.t() | nil) :: String.t()
+  defp do_create_account_number(nil) do
     :crypto.strong_rand_bytes(5)
     |> :binary.decode_unsigned()
     |> rem(10_000_000_000)
@@ -163,10 +168,14 @@ defmodule Bank.Accounts do
     |> String.pad_leading(10, "0")
   end
 
-  @spec maybe_set_name(map(), map()) :: map()
-  defp maybe_set_name(attrs, %{account_type: account_type}) do
-    name = Atom.to_string(account_type)
+  defp do_create_account_number(account_number), do: account_number
 
+  @spec maybe_set_name(map(), %Account{}) :: map()
+  defp maybe_set_name(%{name: name} = attrs, _account) when is_binary(name), do: attrs
+
+  defp maybe_set_name(attrs, %Account{account_type: account_type})
+       when is_atom(account_type) do
+    name = Atom.to_string(account_type)
     Map.put_new(attrs, :name, name)
   end
 end
