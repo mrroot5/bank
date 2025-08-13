@@ -10,8 +10,8 @@ defmodule Bank.Ledgers do
   import Ecto.Query, warn: false
 
   alias Bank.Accounts
-  alias Bank.QueryComposer
   alias Bank.Ledgers.Ledger
+  alias Bank.QueryComposer
   alias Bank.Repo
 
   @doc """

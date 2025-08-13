@@ -294,8 +294,7 @@ defmodule Bank.Accounts.LedgersTest do
 
       # Manual balance calculation to verify consistency
       expected_balance =
-        result
-        |> Enum.reduce(Decimal.new("1000.00"), fn ledger, acc ->
+        Enum.reduce(result, Decimal.new("1000.00"), fn ledger, acc ->
           case ledger.entry_type do
             :credit -> Decimal.add(acc, ledger.amount)
             :debit -> Decimal.sub(acc, ledger.amount)

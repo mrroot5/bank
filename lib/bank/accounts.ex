@@ -8,10 +8,10 @@ defmodule Bank.Accounts do
 
   import Ecto.Query, warn: false
 
-  alias Bank.Ecto.Utils, as: EctoUtils
   alias Bank.Accounts.Account
   alias Bank.Accounts.IBANGenerator
   alias Bank.Accounts.SWIFTGenerator
+  alias Bank.Ecto.Utils, as: EctoUtils
   alias Bank.QueryComposer
   alias Bank.Repo
   alias Ecto.Schema

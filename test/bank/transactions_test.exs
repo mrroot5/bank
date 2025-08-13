@@ -1,11 +1,11 @@
 defmodule Bank.TransactionsTest do
   use Bank.DataCase, async: true
 
+  alias Bank.Repo
   alias Bank.Transactions
   alias Bank.Transactions.Transaction
   alias Bank.TransactionsFixtures
   alias Bank.UsersFixtures
-  alias Bank.Repo
 
   describe "list/1" do
     setup do

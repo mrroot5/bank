@@ -8,12 +8,12 @@ defmodule Bank.Transactions do
 
   import Ecto.Query, warn: false
 
-  alias Ecto.Changeset
   alias Bank.Ecto.Utils, as: EctoUtils
   alias Bank.Ledgers
   alias Bank.QueryComposer
   alias Bank.Repo
   alias Bank.Transactions.Transaction
+  alias Ecto.Changeset
   alias Ecto.Schema
 
   @doc """
