@@ -60,7 +60,6 @@ defmodule Bank.Repo.Migrations.CreateTablesAccountLedgerTransactions do
       add :amount, :decimal, precision: 18, scale: 6, null: false
       add :currency, :string, null: false
       add :description, :text, null: false
-      add :idempotency_key, :string
       add :metadata, :map, default: %{}
       add :status, :string, null: false, default: "pending"
       add :transaction_type, :string, null: false
@@ -69,7 +68,6 @@ defmodule Bank.Repo.Migrations.CreateTablesAccountLedgerTransactions do
       timestamps(type: :utc_datetime_usec)
     end
 
-    create_if_not_exists unique_index(:transactions, [:idempotency_key])
     # Fast lookup to find pending, failed, etc transactions by account
     create_if_not_exists index(:transactions, [:account_id, :status])
     # Fast lookup to find pending, failed, etc transactions by account
