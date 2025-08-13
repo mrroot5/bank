@@ -13,6 +13,7 @@ defmodule Bank.Ledgers do
   alias Bank.Ledgers.Ledger
   alias Bank.QueryComposer
   alias Bank.Repo
+  alias Ecto.Schema
 
   @doc """
   Returns the list of ledger entries.
@@ -45,6 +46,7 @@ defmodule Bank.Ledgers do
 
   Raises `Ecto.NoResultsError` if the Ledger does not exist.
   """
+  @spec get!(String.t(), keyword()) :: Schema.t()
   def get!(id, opts \\ []) do
     Ledger
     |> QueryComposer.maybe_preload(opts[:preload])
@@ -74,6 +76,7 @@ defmodule Bank.Ledgers do
       iex> create(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
   """
+  @spec create(map()) :: {:ok, Schema.t(), Schema.t()} | {:error, Ecto.Changeset.t()}
   def create(attrs \\ %{}) do
     Repo.transact(fn ->
       ledger_result =

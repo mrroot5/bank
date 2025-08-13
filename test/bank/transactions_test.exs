@@ -477,12 +477,10 @@ defmodule Bank.TransactionsTest do
 
   describe "performance considerations" do
     test "list with filters uses database indexes efficiently" do
-      # Create transactions with known patterns
       account = Bank.AccountsFixtures.fixture()
       expected_time_ms = 10
 
-      1..10
-      |> Enum.each(fn i ->
+      Enum.each(1..10, fn i ->
         TransactionsFixtures.fixture(%{
           account_id: account.id,
           transaction_type: if(rem(i, 2) == 0, do: :deposit, else: :withdrawal),
@@ -515,9 +513,7 @@ defmodule Bank.TransactionsTest do
       account = Bank.AccountsFixtures.fixture()
       expected_time_ms = 20
 
-      # Create many transactions to test query performance
-      1..50
-      |> Enum.each(fn i ->
+      Enum.each(1..50, fn i ->
         TransactionsFixtures.fixture(%{
           account_id: account.id,
           amount: Decimal.new("#{i}.00"),

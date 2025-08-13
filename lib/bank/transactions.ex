@@ -34,6 +34,7 @@ defmodule Bank.Transactions do
 
   Raises `Ecto.NoResultsError` if the Transaction does not exist.
   """
+  @spec get!(String.t(), keyword()) :: Schema.t()
   def get!(id, opts \\ []) do
     Transaction
     |> QueryComposer.maybe_preload(opts[:preload])
@@ -93,6 +94,7 @@ defmodule Bank.Transactions do
   @doc """
   Fails a transaction with reason.
   """
+  @spec fail(Schema.t(), String.t(), pos_integer() | nil, map()) :: EctoUtils.write()
   def fail(%Transaction{} = transaction, reason, error_code \\ nil, metadata \\ %{}) do
     transaction
     |> Transaction.fail_changeset(reason, error_code, metadata)
@@ -104,6 +106,7 @@ defmodule Bank.Transactions do
 
   Only certain fields can be updated based on transaction status.
   """
+  @spec update_transaction(Schema.t(), map()) :: EctoUtils.write()
   def update_transaction(%Transaction{} = transaction, attrs) do
     transaction
     |> Transaction.changeset(attrs)
@@ -113,7 +116,8 @@ defmodule Bank.Transactions do
   @doc """
   Updates transaction status.
   """
-  def update_status(%Transaction{} = transaction, status),
+  @spec update_status(Schema.t(), atom()) :: EctoUtils.write()
+  def update_status(%Transaction{} = transaction, status) when is_atom(status),
     do: update_transaction(transaction, %{status: status})
 
   @spec infer_ledger_entry_type(atom()) :: :credit | :debit

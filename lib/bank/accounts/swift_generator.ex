@@ -7,8 +7,9 @@ defmodule Bank.Accounts.SWIFTGenerator do
 
   @spec generate(keyword()) :: String.t()
   def generate(opts \\ []) do
+    location_code = opts[:location_code] || random_alnum(2)
     bank_code = "BANK"
-    location = (opts[:location_code] || random_alnum(2)) |> String.upcase()
+    location = String.upcase(location_code)
     branch = opts[:branch_code] || "XXX"
 
     bank_code <> @country_code <> location <> branch
@@ -16,11 +17,9 @@ defmodule Bank.Accounts.SWIFTGenerator do
 
   defp random_alnum(n) do
     chars =
-      (?A..?Z |> Enum.map(&<<&1>>)) ++
-        (?0..?9 |> Enum.map(&<<&1>>))
+      Enum.map(?A..?Z, &<<&1>>) ++
+        Enum.map(?0..?9, &<<&1>>)
 
-    1..n
-    |> Enum.map(fn _ -> Enum.random(chars) end)
-    |> Enum.join()
+    Enum.map_join(1..n, fn _ -> Enum.random(chars) end)
   end
 end

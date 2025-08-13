@@ -66,31 +66,12 @@ defmodule Bank.Accounts do
     attrs = maybe_create_account_number(attrs)
     metadata = create_metadata(attrs[:account_number])
 
-    result =
+    changeset =
       %Account{}
       |> Account.changeset(attrs)
       |> Account.metadata_changeset(metadata)
-      |> Repo.insert()
 
-    case result do
-      {:ok, account} ->
-        {:ok, account}
-
-      {:error, changeset} when attempts <= 0 ->
-        {:error, changeset}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        if has_account_number_uniqueness_error?(changeset) do
-          # Edge case where account_number was taken between generation and insertion
-          attrs_without_account_number = Map.delete(attrs, :account_number)
-          create(attrs_without_account_number, attempts - 1)
-        else
-          {:error, changeset}
-        end
-
-      {:error, changeset} ->
-        {:error, changeset}
-    end
+    insert_account(changeset, attrs, attempts)
   end
 
   @spec create_metadata(String.t()) :: map()
@@ -176,11 +157,35 @@ defmodule Bank.Accounts do
 
   defp do_create_account_number(account_number) when is_binary(account_number), do: account_number
 
+  defp handle_insert_error(changeset, attrs, attempts) when attempts > 0 do
+    if has_account_number_uniqueness_error?(changeset) do
+      attrs_without_account_number = Map.delete(attrs, :account_number)
+      create(attrs_without_account_number, attempts - 1)
+    else
+      {:error, changeset}
+    end
+  end
+
+  defp handle_insert_error(changeset, _attrs, _attempts), do: {:error, changeset}
+
   @spec has_account_number_uniqueness_error?(Ecto.Changeset.t()) :: boolean()
   defp has_account_number_uniqueness_error?(changeset) do
     errors = Bank.DataCase.errors_on(changeset)
 
     Map.get(errors, :account_number) == ["has already been taken"]
+  end
+
+  defp insert_account(changeset, attrs, attempts) do
+    case Repo.insert(changeset) do
+      {:ok, account} ->
+        {:ok, account}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        handle_insert_error(changeset, attrs, attempts)
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   defp maybe_create_account_number(attrs) when is_map_key(attrs, :account_number) do

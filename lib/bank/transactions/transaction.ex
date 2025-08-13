@@ -10,9 +10,9 @@ defmodule Bank.Transactions.Transaction do
   - International transactions.
   - External transactions services (PayPal, etc.).
   """
-  import Ecto.Query
-
   use Bank.Ecto.Schema
+
+  import Ecto.Query
 
   alias Bank.Accounts.Account
   alias Bank.Ledgers.Ledger

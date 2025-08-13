@@ -22,30 +22,8 @@ defmodule Bank.QueryComposer do
   @spec compose(Query.t(), filters_where() | filters_others()) :: Query.t()
   def compose(query, nil), do: query
 
-  def compose(query, filters) when is_list(filters) do
-    Enum.reduce(filters, query, fn
-      {"eq", field_name, value}, query ->
-        where(query, [t], field(t, ^field_name) == ^value)
-
-      {"or_eq", field_name, value}, query ->
-        or_where(query, [t], field(t, ^field_name) == ^value)
-
-      {"gte", field_name, value}, query ->
-        where(query, [t], field(t, ^field_name) >= ^value)
-
-      {"lte", field_name, value}, query ->
-        where(query, [t], field(t, ^field_name) <= ^value)
-
-      {"limit", limit}, query ->
-        limit(query, ^limit)
-
-      {"offset", offset}, query ->
-        offset(query, ^offset)
-
-      _, query ->
-        query
-    end)
-  end
+  def compose(query, filters) when is_list(filters),
+    do: Enum.reduce(filters, query, &apply_filter/2)
 
   @doc """
   Filters ecto query by a range of dates
@@ -68,6 +46,26 @@ defmodule Bank.QueryComposer do
   #
   # Private function
   #
+
+  defp apply_filter({"eq", field_name, value}, query),
+    do: where(query, [t], field(t, ^field_name) == ^value)
+
+  defp apply_filter({"gte", field_name, value}, query),
+    do: where(query, [t], field(t, ^field_name) >= ^value)
+
+  defp apply_filter({"lte", field_name, value}, query),
+    do: where(query, [t], field(t, ^field_name) <= ^value)
+
+  defp apply_filter({"or_eq", field_name, value}, query),
+    do: or_where(query, [t], field(t, ^field_name) == ^value)
+
+  defp apply_filter({"limit", limit}, query),
+    do: limit(query, ^limit)
+
+  defp apply_filter({"offset", offset}, query),
+    do: offset(query, ^offset)
+
+  defp apply_filter(_, query), do: query
 
   defp date_field_default(nil), do: :inserted_at
   defp date_field_default(field) when is_atom(field), do: field

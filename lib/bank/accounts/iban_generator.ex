@@ -29,10 +29,18 @@ defmodule Bank.Accounts.IBANGenerator do
 
   defp compute_check_digits(country, bban) do
     raw = bban <> country <> "00"
-    numeric = raw |> String.graphemes() |> Enum.map(&char_to_int/1) |> Enum.join()
+
+    numeric =
+      raw
+      |> String.graphemes()
+      |> Enum.map_join(&char_to_int/1)
+
     rem = mod97(numeric)
     check_val = 98 - rem
-    Integer.to_string(check_val) |> String.pad_leading(2, "0")
+
+    check_val
+    |> Integer.to_string()
+    |> String.pad_leading(2, "0")
   end
 
   defp char_to_int(ch) do
@@ -47,7 +55,9 @@ defmodule Bank.Accounts.IBANGenerator do
     |> String.graphemes()
     |> Enum.chunk_every(7)
     |> Enum.reduce(0, fn chunk, acc ->
-      (Integer.to_string(acc) <> Enum.join(chunk)) |> String.to_integer() |> rem(97)
+      (Integer.to_string(acc) <> Enum.join(chunk))
+      |> String.to_integer()
+      |> rem(97)
     end)
   end
 end

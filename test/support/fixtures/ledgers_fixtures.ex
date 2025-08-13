@@ -3,9 +3,12 @@ defmodule Bank.LedgersFixtures do
   This module defines test fixtures for Ledgers.
   """
 
+  require Ecto.Schema
+
   alias Bank.AccountsFixtures
   alias Bank.Ledgers.Ledger
   alias Bank.Repo
+  alias Ecto.Schema
 
   @doc """
   Generate a ledger entry.
@@ -18,6 +21,7 @@ defmodule Bank.LedgersFixtures do
       iex> fixture(%{amount: Decimal.new("250.00"), entry_type: :debit})
       %Ledger{}
   """
+  @spec fixture(map()) :: Schema.t()
   def fixture(attrs \\ %{}) do
     account = get_or_create_account(attrs)
 
@@ -39,6 +43,7 @@ defmodule Bank.LedgersFixtures do
     |> Repo.insert!()
   end
 
+  @spec multiple_fixture(map()) :: [Schema.t()]
   def multiple_fixture(attrs \\ %{}) do
     account = get_or_create_account(attrs)
 
@@ -70,6 +75,7 @@ defmodule Bank.LedgersFixtures do
     ]
   end
 
+  @spec get_or_create_account(map()) :: Schema.t()
   defp get_or_create_account(attrs) do
     case attrs[:account_id] do
       nil ->

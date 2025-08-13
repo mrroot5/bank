@@ -5,6 +5,7 @@ defmodule Bank.AccountsFixtures do
 
   alias Bank.Accounts
 
+  @spec fixture(map()) :: Ecto.Schema.t()
   def fixture(attrs \\ %{}) do
     user = Map.get(attrs, :user) || Bank.UsersFixtures.fixture()
     {:ok, account_number} = Accounts.create_account_number()

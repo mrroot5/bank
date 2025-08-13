@@ -8,8 +8,14 @@ defmodule Bank.TransactionsFixtures do
   @doc """
   Generate a transaction.
   """
+  @spec fixture(map()) :: Ecto.Schema.t()
   def fixture(attrs \\ %{}) do
     account = AccountsFixtures.fixture()
+
+    crypto_base64 =
+      8
+      |> :crypto.strong_rand_bytes()
+      |> Base.encode64()
 
     default_attrs = %{
       account_id: account.id,
@@ -17,7 +23,7 @@ defmodule Bank.TransactionsFixtures do
       currency: "USD",
       description: "Test transaction",
       transaction_type: :deposit,
-      idempotency_key: "test_key_#{:crypto.strong_rand_bytes(8) |> Base.encode64()}"
+      idempotency_key: "test_key_#{crypto_base64}"
     }
 
     {:ok, transaction} =
@@ -28,6 +34,7 @@ defmodule Bank.TransactionsFixtures do
     transaction
   end
 
+  @spec multiple_fixture :: [Ecto.Schema.t()]
   def multiple_fixture do
     account = AccountsFixtures.fixture()
 
