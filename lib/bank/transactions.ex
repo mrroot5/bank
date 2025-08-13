@@ -34,7 +34,7 @@ defmodule Bank.Transactions do
 
   Raises `Ecto.NoResultsError` if the Transaction does not exist.
   """
-  @spec get!(String.t(), keyword()) :: Schema.t()
+  @spec get!(String.t(), keyword()) :: Schema.t() | no_return()
   def get!(id, opts \\ []) do
     Transaction
     |> QueryComposer.maybe_preload(opts[:preload])
@@ -44,7 +44,7 @@ defmodule Bank.Transactions do
   @doc """
   Get by whatever field you want
   """
-  @spec get_by(map() | keyword(), keyword()) :: Schema.t()
+  @spec get_by(map() | keyword(), keyword()) :: Schema.t() | nil | no_return()
   def get_by(clauses, opts \\ []) do
     Transaction
     |> QueryComposer.maybe_preload(opts[:preload])
@@ -65,7 +65,7 @@ defmodule Bank.Transactions do
   Completes a transaction.
   """
   @spec complete(Schema.t(), map()) ::
-          {:ok, transaction :: Schema.t(), ledger :: Schema.t(), account :: Schema.t()}
+          {:ok, {transaction :: Schema.t(), ledger :: Schema.t(), account :: Schema.t()}}
           | {:error, Changeset.t()}
   def complete(
         %Transaction{} = transaction,

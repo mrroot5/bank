@@ -19,7 +19,7 @@ defmodule Bank.QueryComposer do
   - Filter by limit.
   - Filter by offset.
   """
-  @spec compose(Query.t(), filters_where() | filters_others()) :: Query.t()
+  @spec compose(Ecto.Queryable.t(), filters_where() | filters_others()) :: Query.t()
   def compose(query, nil), do: query
 
   def compose(query, filters) when is_list(filters),
@@ -38,10 +38,10 @@ defmodule Bank.QueryComposer do
   def filter_by_date_range(query, opts) when is_list(opts),
     do: do_filter_by_date_range(query, opts[:from_date], opts[:to_date], opts[:date_field])
 
-  @spec maybe_preload(Query.t(), []) :: Query.t()
+  @spec maybe_preload(Ecto.Queryable.t(), [atom()] | nil) :: Query.t()
   def maybe_preload(query, nil), do: query
   def maybe_preload(query, []), do: query
-  def maybe_preload(query, preloads), do: preload(query, ^preloads)
+  def maybe_preload(query, preloads) when is_list(preloads), do: preload(query, ^preloads)
 
   #
   # Private function

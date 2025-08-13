@@ -76,7 +76,7 @@ defmodule Bank.Ledgers do
       iex> create(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
   """
-  @spec create(map()) :: {:ok, Schema.t(), Schema.t()} | {:error, Ecto.Changeset.t()}
+  @spec create(map()) :: {:ok, {Schema.t(), Schema.t()}} | {:error, Ecto.Changeset.t()}
   def create(attrs \\ %{}) do
     Repo.transact(fn ->
       ledger_result =

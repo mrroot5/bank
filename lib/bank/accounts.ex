@@ -157,6 +157,20 @@ defmodule Bank.Accounts do
 
   defp do_create_account_number(account_number) when is_binary(account_number), do: account_number
 
+  @spec errors_on(Ecto.Changeset.t()) :: map()
+  defp errors_on(changeset) do
+    # Extracted from Bank.DataCase
+    Ecto.Changeset.traverse_errors(changeset, fn {message, opts} ->
+      Regex.replace(~r"%{(\w+)}", message, fn _, key ->
+        key_to_atom = String.to_existing_atom(key)
+
+        opts
+        |> Keyword.get(key_to_atom, key)
+        |> to_string()
+      end)
+    end)
+  end
+
   defp handle_insert_error(changeset, attrs, attempts) when attempts > 0 do
     if has_account_number_uniqueness_error?(changeset) do
       attrs_without_account_number = Map.delete(attrs, :account_number)
@@ -170,7 +184,7 @@ defmodule Bank.Accounts do
 
   @spec has_account_number_uniqueness_error?(Ecto.Changeset.t()) :: boolean()
   defp has_account_number_uniqueness_error?(changeset) do
-    errors = Bank.DataCase.errors_on(changeset)
+    errors = errors_on(changeset)
 
     Map.get(errors, :account_number) == ["has already been taken"]
   end
