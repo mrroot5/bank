@@ -133,14 +133,14 @@ defmodule Bank.TransactionsTest do
       attrs = %{
         account_id: account.id,
         amount: Decimal.new("100.00"),
-        currency: "EUR",
+        currency: "USD",
         description: "Test transaction",
         transaction_type: :deposit
       }
 
       assert {:ok, %Transaction{} = transaction} = Transactions.create(attrs)
       assert transaction.amount == Decimal.new("100.00")
-      assert transaction.currency == "EUR"
+      assert transaction.currency == "USD"
       assert transaction.description == "Test transaction"
       assert transaction.transaction_type == :deposit
       assert transaction.status == :pending
@@ -155,7 +155,7 @@ defmodule Bank.TransactionsTest do
       attrs = %{
         account_id: account.id,
         amount: Decimal.new("100.00"),
-        currency: "EUR",
+        currency: "USD",
         description: "Transaction with metadata",
         transaction_type: :deposit,
         metadata: metadata
@@ -369,7 +369,7 @@ defmodule Bank.TransactionsTest do
       attrs = %{
         account_id: account.id,
         amount: Decimal.new("100.00"),
-        currency: "EUR",
+        currency: "USD",
         transaction_type: :deposit,
         description: "First transaction"
       }
@@ -379,7 +379,7 @@ defmodule Bank.TransactionsTest do
       duplicate_attrs = %{
         account_id: account.id,
         amount: Decimal.new("100.00"),
-        currency: "EUR",
+        currency: "USD",
         transaction_type: :deposit,
         # Different description (should be ignored)
         description: "Different description"
@@ -393,7 +393,7 @@ defmodule Bank.TransactionsTest do
       attrs = %{
         account_id: account.id,
         amount: Decimal.new("100.00"),
-        currency: "EUR",
+        currency: "USD",
         transaction_type: :deposit,
         description: "Test transaction"
       }
@@ -421,7 +421,7 @@ defmodule Bank.TransactionsTest do
       base_transaction = %{
         account_id: account.id,
         amount: Decimal.new("100.00"),
-        currency: "EUR",
+        currency: "USD",
         transaction_type: :deposit,
         description: "Base transaction"
       }
@@ -431,7 +431,7 @@ defmodule Bank.TransactionsTest do
       # These should be allowed (different in at least one key field)
       allowed_variations = [
         %{base_transaction | amount: Decimal.new("100.01")},
-        %{base_transaction | currency: "USD"},
+        %{base_transaction | currency: "EUR"},
         %{base_transaction | transaction_type: :withdrawal}
       ]
 
@@ -454,7 +454,7 @@ defmodule Bank.TransactionsTest do
       base_attrs = %{
         account_id: account.id,
         amount: Decimal.new("100.00"),
-        currency: "EUR",
+        currency: "USD",
         transaction_type: :deposit,
         description: "Original description"
       }
@@ -532,7 +532,7 @@ defmodule Bank.TransactionsTest do
         account_id: account.id,
         # Unique amount
         amount: Decimal.new("999.00"),
-        currency: "EUR",
+        currency: "USD",
         transaction_type: :deposit,
         description: "Performance test"
       }
@@ -556,7 +556,7 @@ defmodule Bank.TransactionsTest do
       attrs1 = %{
         account_id: account.id,
         amount: Decimal.new("100.00"),
-        currency: "EUR",
+        currency: "USD",
         transaction_type: :deposit,
         description: "Precision test"
       }
@@ -568,7 +568,7 @@ defmodule Bank.TransactionsTest do
         account_id: account.id,
         # More precision, same value
         amount: Decimal.new("100.000"),
-        currency: "EUR",
+        currency: "USD",
         transaction_type: :deposit,
         description: "Different precision"
       }
@@ -584,8 +584,7 @@ defmodule Bank.TransactionsTest do
       attrs1 = %{
         account_id: account.id,
         amount: Decimal.new("100.00"),
-        # lowercase
-        currency: "eur",
+        currency: "usd",
         transaction_type: :deposit,
         description: "Case test"
       }
@@ -595,8 +594,7 @@ defmodule Bank.TransactionsTest do
       attrs2 = %{
         account_id: account.id,
         amount: Decimal.new("100.00"),
-        # uppercase
-        currency: "EUR",
+        currency: "USD",
         transaction_type: :deposit,
         description: "Case test"
       }

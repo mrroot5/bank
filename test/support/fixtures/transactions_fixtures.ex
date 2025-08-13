@@ -14,7 +14,7 @@ defmodule Bank.TransactionsFixtures do
     default_attrs = %{
       account_id: account.id,
       amount: Decimal.new("100.00"),
-      currency: "EUR",
+      currency: "USD",
       description: "Test transaction",
       transaction_type: :deposit,
       idempotency_key: "test_key_#{:crypto.strong_rand_bytes(8) |> Base.encode64()}"
