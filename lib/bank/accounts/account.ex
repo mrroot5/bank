@@ -55,35 +55,39 @@ defmodule Bank.Accounts.Account do
     ])
     |> cast_embed(:metadata, with: &AccountMetadata.changeset/2)
     |> account_number_changeset(attrs)
+    |> maybe_set_name(attrs)
     |> validate_required([:account_type, :balance, :currency, :name, :user_id])
     |> validate_inclusion(:account_type, @account_types)
     |> validate_inclusion(:status, @account_statuses)
     |> validate_length(:currency, is: 3)
     |> validate_number(:balance, greater_than_or_equal_to: Decimal.new("-1000"))
-    |> prevent_currency_update(account)
+    |> prevent_currency_update()
     |> foreign_key_constraint(:user_id)
-  end
-
-  @spec defaults_changeset(Schema.t(), map()) :: Changeset.t()
-  def defaults_changeset(account, attrs) do
-    account
-    |> cast(attrs, [
-      :account_type,
-      :currency,
-      :status,
-      :user_id
-    ])
-    |> cast_embed(:metadata, with: &AccountMetadata.changeset/2)
+    |> unique_constraint([:account_type, :currency, :user_id])
   end
 
   @spec metadata_changeset(Ecto.Changeset.t(), %{
           optional(:iban) => String.t(),
           optional(:swift) => String.t()
         }) :: Ecto.Changeset.t()
+
   def metadata_changeset(changeset, metadata), do: put_embed(changeset, :metadata, metadata)
 
-  @spec prevent_currency_update(Changeset.t(), map()) :: Changeset.t()
-  defp prevent_currency_update(changeset, %{currency: old_currency}) do
+  defp maybe_set_name(changeset, %{name: name}) when is_binary(name), do: changeset
+
+  defp maybe_set_name(%{data: %{account_type: account_type}} = changeset, _attrs)
+       when is_atom(account_type) do
+    name = Atom.to_string(account_type)
+
+    put_change(changeset, :name, name)
+  end
+
+  @spec prevent_currency_update(Changeset.t()) :: Changeset.t()
+  defp prevent_currency_update(%Ecto.Changeset{data: %{id: nil}} = changeset), do: changeset
+
+  defp prevent_currency_update(changeset) do
+    old_currency = changeset.data.currency
+
     case fetch_change(changeset, :currency) do
       {:ok, new_currency} when new_currency != old_currency ->
         add_error(changeset, :currency, "cannot be changed once set")
@@ -92,6 +96,4 @@ defmodule Bank.Accounts.Account do
         changeset
     end
   end
-
-  defp prevent_currency_update(changeset, _), do: changeset
 end

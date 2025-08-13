@@ -63,14 +63,8 @@ defmodule Bank.Accounts do
   """
   @spec create(map(), non_neg_integer()) :: EctoUtils.write()
   def create(attrs \\ %{}, attempts \\ 3) do
-    {:ok, account_number} = create_account_number(attrs)
-    defaults_changeset = Account.defaults_changeset(%Account{}, attrs)
-    metadata = create_metadata(account_number)
-
-    attrs =
-      attrs
-      |> Map.put_new(:account_number, account_number)
-      |> maybe_set_name(defaults_changeset.data)
+    attrs = maybe_create_account_number(attrs)
+    metadata = create_metadata(attrs[:account_number])
 
     result =
       %Account{}
@@ -189,12 +183,20 @@ defmodule Bank.Accounts do
     Map.get(errors, :account_number) == ["has already been taken"]
   end
 
-  @spec maybe_set_name(map(), %Account{}) :: map()
-  defp maybe_set_name(%{name: name} = attrs, _account) when is_binary(name), do: attrs
+  defp maybe_create_account_number(attrs) when is_map_key(attrs, :account_number) do
+    changeset = Account.account_number_changeset(%Account{}, attrs)
 
-  defp maybe_set_name(attrs, %Account{account_type: account_type})
-       when is_atom(account_type) do
-    name = Atom.to_string(account_type)
-    Map.put_new(attrs, :name, name)
+    if changeset.valid? do
+      attrs
+    else
+      attrs
+      |> Map.delete(:account_number)
+      |> maybe_create_account_number()
+    end
+  end
+
+  defp maybe_create_account_number(attrs) do
+    {:ok, account_number} = create_account_number(attrs)
+    Map.put(attrs, :account_number, account_number)
   end
 end

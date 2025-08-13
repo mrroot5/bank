@@ -5,15 +5,13 @@ defmodule Bank.AccountsFixtures do
 
   alias Bank.Accounts
 
-  def account_fixture(attrs \\ %{}) do
-    user = Map.get(attrs, :user) || Bank.UsersFixtures.user_fixture()
+  def fixture(attrs \\ %{}) do
+    user = Map.get(attrs, :user) || Bank.UsersFixtures.fixture()
+    {:ok, account_number} = Accounts.create_account_number()
 
     default_attrs = %{
-      account_number: "3171377546",
-      account_type: :checking,
-      currency: "EUR",
+      account_number: account_number,
       name: "Test Account",
-      status: :active,
       user_id: user.id
     }
 
