@@ -61,27 +61,41 @@ defmodule Bank.Accounts do
       iex> create(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
   """
-  @spec create(map()) :: EctoUtils.write()
-  def create(attrs \\ %{}) do
+  @spec create(map(), non_neg_integer()) :: EctoUtils.write()
+  def create(attrs \\ %{}, attempts \\ 3) do
     {:ok, account_number} = create_account_number(attrs)
     defaults_changeset = Account.defaults_changeset(%Account{}, attrs)
+    metadata = create_metadata(account_number)
 
     attrs =
       attrs
       |> Map.put_new(:account_number, account_number)
       |> maybe_set_name(defaults_changeset.data)
 
-    changeset = Account.changeset(%Account{}, attrs)
-
-    if changeset.valid? do
-      metadata = create_metadata(account_number)
-
-      changeset
+    result =
+      %Account{}
       |> Account.changeset(attrs)
       |> Account.metadata_changeset(metadata)
       |> Repo.insert()
-    else
-      {:error, changeset}
+
+    case result do
+      {:ok, account} ->
+        {:ok, account}
+
+      {:error, changeset} when attempts <= 0 ->
+        {:error, changeset}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        if has_account_number_uniqueness_error?(changeset) do
+          # Edge case where account_number was taken between generation and insertion
+          attrs_without_account_number = Map.delete(attrs, :account_number)
+          create(attrs_without_account_number, attempts - 1)
+        else
+          {:error, changeset}
+        end
+
+      {:error, changeset} ->
+        {:error, changeset}
     end
   end
 
@@ -140,8 +154,6 @@ defmodule Bank.Accounts do
 
   def reactivate_account(%Account{}), do: {:error, :invalid_status}
 
-  # Private functions
-
   @doc """
   Creates a unique account number.
 
@@ -168,7 +180,14 @@ defmodule Bank.Accounts do
     |> String.pad_leading(10, "0")
   end
 
-  defp do_create_account_number(account_number), do: account_number
+  defp do_create_account_number(account_number) when is_binary(account_number), do: account_number
+
+  @spec has_account_number_uniqueness_error?(Ecto.Changeset.t()) :: boolean()
+  defp has_account_number_uniqueness_error?(changeset) do
+    errors = Bank.DataCase.errors_on(changeset)
+
+    Map.get(errors, :account_number) == ["has already been taken"]
+  end
 
   @spec maybe_set_name(map(), %Account{}) :: map()
   defp maybe_set_name(%{name: name} = attrs, _account) when is_binary(name), do: attrs
