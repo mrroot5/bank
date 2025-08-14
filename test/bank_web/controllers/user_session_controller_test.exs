@@ -1,10 +1,10 @@
 defmodule BankWeb.UserSessionControllerTest do
   use BankWeb.ConnCase, async: true
 
-  import Bank.UsersFixtures
+  alias Bank.UsersFixtures
 
   setup do
-    %{user: user_fixture()}
+    %{user: UsersFixtures.fixture()}
   end
 
   describe "GET /users/log_in" do
@@ -30,7 +30,7 @@ defmodule BankWeb.UserSessionControllerTest do
     test "logs the user in", %{conn: conn, user: user} do
       conn =
         post(conn, ~p"/users/log_in", %{
-          "user" => %{"email" => user.email, "password" => valid_user_password()}
+          "user" => %{"email" => user.email, "password" => UsersFixtures.valid_user_password()}
         })
 
       assert get_session(conn, :user_token)
@@ -49,7 +49,7 @@ defmodule BankWeb.UserSessionControllerTest do
         post(conn, ~p"/users/log_in", %{
           "user" => %{
             "email" => user.email,
-            "password" => valid_user_password(),
+            "password" => UsersFixtures.valid_user_password(),
             "remember_me" => "true"
           }
         })
@@ -65,7 +65,7 @@ defmodule BankWeb.UserSessionControllerTest do
         |> post(~p"/users/log_in", %{
           "user" => %{
             "email" => user.email,
-            "password" => valid_user_password()
+            "password" => UsersFixtures.valid_user_password()
           }
         })
 

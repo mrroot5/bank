@@ -33,7 +33,7 @@ defmodule Bank.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:argon2_elixir, "~> 3.0"},
+      {:argon2_elixir, "~> 4.1"},
       {:bandit, "~> 1.5"},
       {:bodyguard, "~> 2.4"},
       {:credo, "~> 1.7", only: :dev, runtime: false},
@@ -106,7 +106,6 @@ defmodule Bank.MixProject do
   @spec get_mix_env :: atom()
   defp get_mix_env, do: get_mix_env(System.get_env("MIX_ENV"))
 
-  # TODO Esto deberia fallar y pedir que se agregue el segundo tipo de spec ya que este tiene un arity de 1 no de 0
   defp get_mix_env(nil), do: Mix.env()
 
   defp get_mix_env(mix_env) when is_binary(mix_env), do: String.to_atom(mix_env)
