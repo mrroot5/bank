@@ -22,38 +22,23 @@ defmodule Bank.Transactions do
   @spec complete(Schema.t(), map()) ::
           {:ok, {transaction :: Schema.t(), ledger :: Schema.t(), account :: Schema.t()}}
           | {:error, Changeset.t()}
-  def complete(
-        %Transaction{} = transaction,
-        metadata \\ %{}
-      ) do
+  def complete(%Transaction{} = transaction, metadata \\ %{}) do
     Repo.transact(fn ->
-      transaction_result =
-        transaction
-        |> Transaction.complete_changeset(metadata)
-        |> Repo.update()
-
-      ledger_attrs = %{
-        account_id: transaction.account_id,
-        amount: transaction.amount,
-        entry_type: infer_ledger_entry_type(transaction.transaction_type),
-        transaction_id: transaction.id
-      }
-
-      with {:ok, updated_transaction} <- transaction_result,
-           {:ok, {ledger, account}} <- Ledgers.create(ledger_attrs) do
+      with {:ok, updated_transaction} <- update_transaction_status(transaction, metadata),
+           {:ok, {ledger, account}} <- create_ledger_entry(transaction) do
         {:ok, {updated_transaction, ledger, account}}
       end
     end)
+  end
 
-    @doc """
-    Creates a transaction with support.
-    """
-    @spec create(map()) :: EctoUtils.write()
-    def create(attrs \\ %{}) do
-      %Transaction{}
-      |> Transaction.changeset(attrs)
-      |> Repo.insert()
-    end
+  @doc """
+  Creates a transaction with support.
+  """
+  @spec create(map()) :: EctoUtils.write()
+  def create(attrs \\ %{}) do
+    %Transaction{}
+    |> Transaction.changeset(attrs)
+    |> Repo.insert()
   end
 
   @doc """
@@ -124,10 +109,27 @@ defmodule Bank.Transactions do
   # Private functions
   #
 
+  defp create_ledger_entry(transaction) do
+    ledger_attrs = %{
+      account_id: transaction.account_id,
+      amount: transaction.amount,
+      entry_type: infer_ledger_entry_type(transaction.transaction_type),
+      transaction_id: transaction.id
+    }
+
+    Ledgers.create(ledger_attrs)
+  end
+
   @spec infer_ledger_entry_type(atom()) :: :credit | :debit
   defp infer_ledger_entry_type(transaction_types)
        when transaction_types in [:deposit, :interest_payment],
        do: :credit
 
   defp infer_ledger_entry_type(_transaction_types), do: :debit
+
+  defp update_transaction_status(transaction, metadata) do
+    transaction
+    |> Transaction.complete_changeset(metadata)
+    |> Repo.update()
+  end
 end
