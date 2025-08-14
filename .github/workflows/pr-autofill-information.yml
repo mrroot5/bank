@@ -39,12 +39,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions: { pull-requests: write }
     steps:
-      - name: checkout
-        uses: actions/checkout@v2
-
       - uses: actions-ecosystem/action-add-labels@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.TOKEN }}
           labels: bug, elixir
 
   enhancement-label:
@@ -54,12 +51,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions: { pull-requests: write }
     steps:
-      - name: checkout
-        uses: actions/checkout@v2
-
       - uses: actions-ecosystem/action-add-labels@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.TOKEN }}
           labels: enhancement, elixir
 
   style-label:
@@ -69,12 +63,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions: { pull-requests: write }
     steps:
-      - name: checkout
-        uses: actions/checkout@v2
-
       - uses: actions-ecosystem/action-add-labels@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.TOKEN }}
           labels: style, elixir
 
   build-label:
@@ -84,12 +75,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions: { pull-requests: write }
     steps:
-      - name: checkout
-        uses: actions/checkout@v2
-
       - uses: actions-ecosystem/action-add-labels@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.TOKEN }}
           labels: build
 
   dependencies-label:
@@ -99,12 +87,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions: { pull-requests: write }
     steps:
-      - name: checkout
-        uses: actions/checkout@v2
-
       - uses: actions-ecosystem/action-add-labels@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.TOKEN }}
           labels: dependencies, elixir
 
   docs-label:
@@ -114,12 +99,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions: { pull-requests: write }
     steps:
-      - name: checkout
-        uses: actions/checkout@v2
-
       - uses: actions-ecosystem/action-add-labels@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.TOKEN }}
           labels: documentation, elixir
 
   reopen-label:
@@ -129,12 +111,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions: { pull-requests: write }
     steps:
-      - name: checkout
-        uses: actions/checkout@v2
-
       - uses: actions-ecosystem/action-add-labels@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.TOKEN }}
           labels: reopen
 
   assign-owner:
@@ -143,10 +122,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions: { pull-requests: write }
     steps:
-      - name: checkout
-        uses: actions/checkout@v2
-
       - uses: actions-ecosystem/action-add-assignees@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.TOKEN }}
           assignees: ${{ github.repository_owner }}
