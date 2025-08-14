@@ -8,7 +8,7 @@ defmodule Bank.UsersFixtures do
   def unique_user_email, do: "user#{System.unique_integer()}@example.com"
 
   @spec valid_user_password :: String.t()
-  def valid_user_password, do: "hello world!"
+  def valid_user_password, do: "Hello w0rld!"
 
   @spec valid_user_attributes(map()) :: map()
   def valid_user_attributes(attrs \\ %{}) do
@@ -18,8 +18,8 @@ defmodule Bank.UsersFixtures do
     })
   end
 
-  @spec user_fixture(map()) :: Ecto.Schema.t()
-  def user_fixture(attrs \\ %{}) do
+  @spec fixture(map()) :: Ecto.Schema.t()
+  def fixture(attrs \\ %{}) do
     {:ok, user} =
       attrs
       |> valid_user_attributes()

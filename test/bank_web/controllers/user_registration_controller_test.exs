@@ -1,7 +1,7 @@
 defmodule BankWeb.UserRegistrationControllerTest do
   use BankWeb.ConnCase, async: true
 
-  import Bank.UsersFixtures
+  alias Bank.UsersFixtures
 
   describe "GET /users/register" do
     test "renders registration page", %{conn: conn} do
@@ -15,7 +15,7 @@ defmodule BankWeb.UserRegistrationControllerTest do
     test "redirects if already logged in", %{conn: conn} do
       conn =
         conn
-        |> log_in_user(user_fixture())
+        |> log_in_user(UsersFixtures.fixture())
         |> get(~p"/users/register")
 
       assert redirected_to(conn) == ~p"/"
@@ -25,11 +25,11 @@ defmodule BankWeb.UserRegistrationControllerTest do
   describe "POST /users/register" do
     @tag :capture_log
     test "creates account and logs the user in", %{conn: conn} do
-      email = unique_user_email()
+      email = UsersFixtures.unique_user_email()
 
       conn =
         post(conn, ~p"/users/register", %{
-          "user" => valid_user_attributes(email: email)
+          "user" => UsersFixtures.valid_user_attributes(email: email)
         })
 
       assert get_session(conn, :user_token)

@@ -1,9 +1,8 @@
 defmodule BankWeb.UserAuthTest do
   use BankWeb.ConnCase, async: true
 
-  import Bank.UsersFixtures
-
   alias Bank.Users
+  alias Bank.UsersFixtures
   alias BankWeb.UserAuth
   alias Phoenix.LiveView
 
@@ -15,7 +14,7 @@ defmodule BankWeb.UserAuthTest do
       |> Map.replace!(:secret_key_base, BankWeb.Endpoint.config(:secret_key_base))
       |> init_test_session(%{})
 
-    %{user: user_fixture(), conn: conn}
+    %{user: UsersFixtures.fixture(), conn: conn}
   end
 
   describe "log_in_user/3" do

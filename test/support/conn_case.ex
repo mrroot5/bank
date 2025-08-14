@@ -48,7 +48,7 @@ defmodule BankWeb.ConnCase do
   """
   @spec register_and_log_in_user(map(), map()) :: Conn.t()
   def register_and_log_in_user(%{conn: conn}, fixture_attrs \\ %{}) do
-    user = Bank.UsersFixtures.user_fixture(fixture_attrs)
+    user = Bank.UsersFixtures.fixture(fixture_attrs)
     %{conn: log_in_user(conn, user), user: user}
   end
 
