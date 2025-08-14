@@ -105,7 +105,6 @@ defmodule Bank.MixProject do
   @spec get_mix_env :: atom()
   defp get_mix_env, do: get_mix_env(System.get_env("MIX_ENV"))
 
-  # TODO Esto deberia fallar y pedir que se agregue el segundo tipo de spec ya que este tiene un arity de 1 no de 0
   defp get_mix_env(nil), do: Mix.env()
 
   defp get_mix_env(mix_env) when is_binary(mix_env), do: String.to_atom(mix_env)

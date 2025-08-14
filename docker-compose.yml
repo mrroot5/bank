@@ -17,7 +17,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: 1
+          # it uses less than 100 MB but it is required for the first compilation and about 1.5GB for dialyzer
           memory: 4G
     entrypoint: ['./docker/entrypoint.sh']
     environment:
