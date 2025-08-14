@@ -1,0 +1,130 @@
+name: Label, Assign and Set PR Title
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+jobs:
+  set-title:
+      if: |
+        (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+      runs-on: ubuntu-latest
+      permissions: { pull-requests: write }
+      steps:
+        - uses: actions/github-script@v7
+          with:
+            script: |
+              const branch = context.payload.pull_request.head.ref;
+              const parts = branch.split('-');
+              const prefix = parts.shift();
+              const capitalizedPrefix = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+              const titleBody = parts.join(' ').replace(/\b\w/g, l => l.toUpperCase());
+              const desiredTitle = `${capitalizedPrefix}: ${titleBody}`;
+
+              const currentTitle = context.payload.pull_request.title.trim();
+
+              // Only update if title is empty or matches branch name exactly
+              if (!currentTitle || currentTitle.replace(/\s+/g, '-').toLowerCase() === branch.toLowerCase()) {
+                await github.rest.pulls.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: context.payload.pull_request.number,
+                  title: desiredTitle
+                });
+              }
+  bug-label:
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) &&
+      (startsWith(github.event.pull_request.head.ref, 'bugfix') || startsWith(github.event.pull_request.head.ref, 'fix'))
+    runs-on: ubuntu-latest
+    permissions: { pull-requests: write }
+    steps:
+      - uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: bug, elixir
+
+  enhancement-label:
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) &&
+      (startsWith(github.event.pull_request.head.ref, 'feature') || startsWith(github.event.pull_request.head.ref, 'enhancement'))
+    runs-on: ubuntu-latest
+    permissions: { pull-requests: write }
+    steps:
+      - uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: enhancement, elixir
+
+  style-label:
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) &&
+      (startsWith(github.event.pull_request.head.ref, 'style') || startsWith(github.event.pull_request.head.ref, 'format'))
+    runs-on: ubuntu-latest
+    permissions: { pull-requests: write }
+    steps:
+      - uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: style, elixir
+
+  build-label:
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) &&
+      startsWith(github.event.pull_request.head.ref, 'build')
+    runs-on: ubuntu-latest
+    permissions: { pull-requests: write }
+    steps:
+      - uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: build
+
+  dependencies-label:
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) &&
+      startsWith(github.event.pull_request.head.ref, 'dependabot')
+    runs-on: ubuntu-latest
+    permissions: { pull-requests: write }
+    steps:
+      - uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: dependencies, elixir
+
+  docs-label:
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) &&
+      startsWith(github.event.pull_request.head.ref, 'docs')
+    runs-on: ubuntu-latest
+    permissions: { pull-requests: write }
+    steps:
+      - uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: documentation, elixir
+
+  reopen-label:
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) &&
+      (github.event.action == 'reopened')
+    runs-on: ubuntu-latest
+    permissions: { pull-requests: write }
+    steps:
+      - uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: reopen
+
+  assign-owner:
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+    runs-on: ubuntu-latest
+    permissions: { pull-requests: write }
+    steps:
+      - uses: actions-ecosystem/action-add-assignees@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          assignees: ${{ github.repository_owner }}
+
+
