@@ -39,6 +39,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions: { pull-requests: write }
     steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
       - uses: actions-ecosystem/action-add-labels@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -51,6 +54,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions: { pull-requests: write }
     steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
       - uses: actions-ecosystem/action-add-labels@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -63,6 +69,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions: { pull-requests: write }
     steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
       - uses: actions-ecosystem/action-add-labels@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -75,6 +84,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions: { pull-requests: write }
     steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
       - uses: actions-ecosystem/action-add-labels@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -87,6 +99,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions: { pull-requests: write }
     steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
       - uses: actions-ecosystem/action-add-labels@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -99,6 +114,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions: { pull-requests: write }
     steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
       - uses: actions-ecosystem/action-add-labels@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -111,6 +129,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions: { pull-requests: write }
     steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
       - uses: actions-ecosystem/action-add-labels@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -122,9 +143,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions: { pull-requests: write }
     steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
       - uses: actions-ecosystem/action-add-assignees@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           assignees: ${{ github.repository_owner }}
-
-
