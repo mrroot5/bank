@@ -235,10 +235,22 @@ defmodule Bank.Repo.Migrations.CreateTablesAccountLedgerTransactions do
 
   defp prevent_ledger_updates_trigger_up do
     """
-    CREATE TRIGGER enforce_ledger_immutability
-    BEFORE UPDATE ON ledgers
-    FOR EACH ROW
-    EXECUTE FUNCTION prevent_ledger_updates();
+    DO $$
+    BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_trigger
+        JOIN pg_class ON pg_class.oid = pg_trigger.tgrelid
+        WHERE tgname = 'enforce_ledger_immutability'
+          AND pg_class.relname = 'ledgers'
+          AND NOT tgisinternal
+    ) THEN
+        CREATE TRIGGER enforce_ledger_immutability
+        BEFORE UPDATE ON ledgers
+        FOR EACH ROW
+        EXECUTE FUNCTION prevent_ledger_updates();
+    END IF;
+    END$$;
     """
   end
 
