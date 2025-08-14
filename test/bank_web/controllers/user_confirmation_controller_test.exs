@@ -1,13 +1,12 @@
 defmodule BankWeb.UserConfirmationControllerTest do
   use BankWeb.ConnCase, async: true
 
-  import Bank.UsersFixtures
-
   alias Bank.Repo
   alias Bank.Users
+  alias Bank.UsersFixtures
 
   setup do
-    %{user: user_fixture()}
+    %{user: UsersFixtures.fixture()}
   end
 
   describe "GET /users/confirm" do
@@ -81,7 +80,7 @@ defmodule BankWeb.UserConfirmationControllerTest do
   describe "POST /users/confirm/:token" do
     test "confirms the given token once", %{conn: conn, user: user} do
       token =
-        extract_user_token(fn url ->
+        UsersFixtures.extract_user_token(fn url ->
           Users.deliver_user_confirmation_instructions(user, url)
         end)
 
