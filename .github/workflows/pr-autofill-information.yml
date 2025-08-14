@@ -1,0 +1,102 @@
+name: Label, Assignee and Set PR Title
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+jobs:
+  set-title:
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = context.payload.pull_request.head.ref;
+            const [prefix, ...rest] = branch.split('-');
+            const title = `${prefix.charAt(0).toUpperCase() + prefix.slice(1)}: ${rest.join(' ')}`;
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              title,
+              assignees: [context.repo.owner]
+            });
+
+  assign-owner:
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions-ecosystem/action-add-assignees@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          assignees: ${{ github.repository_owner }}
+
+  labels:
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+    steps:
+      # Bugfix labels
+      - if: startsWith(github.event.pull_request.head.ref, 'bugfix') || startsWith(github.event.pull_request.head.ref, 'fix')
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: |
+            bug
+            elixir
+
+      # Enhancement labels
+      - if: startsWith(github.event.pull_request.head.ref, 'feature') || startsWith(github.event.pull_request.head.ref, 'enhancement')
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: |
+            enhancement
+            elixir
+
+      # Style labels
+      - if: startsWith(github.event.pull_request.head.ref, 'style') || startsWith(github.event.pull_request.head.ref, 'format')
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: |
+            style
+            elixir
+
+      # Build labels
+      - if: startsWith(github.event.pull_request.head.ref, 'build')
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: |
+            build
+
+      # Dependencies labels
+      - if: startsWith(github.event.pull_request.head.ref, 'dependabot')
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: |
+            dependencies
+            elixir
+
+      # Documentation labels
+      - if: startsWith(github.event.pull_request.head.ref, 'docs')
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: |
+            documentation
+            elixir
+
+      # Reopened PR labels
+      - if: github.event.action == 'reopened'
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: |
+            reopen
