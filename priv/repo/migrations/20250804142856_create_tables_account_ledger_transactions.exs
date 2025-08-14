@@ -190,11 +190,23 @@ defmodule Bank.Repo.Migrations.CreateTablesAccountLedgerTransactions do
 
   defp prevent_account_currency_update_trigger_up do
     """
-    CREATE TRIGGER prevent_account_currency_update_trigger
-      BEFORE UPDATE ON accounts
-      FOR EACH ROW
-      WHEN (OLD.currency IS DISTINCT FROM NEW.currency)
-      EXECUTE FUNCTION prevent_account_currency_update();
+    DO $$
+    BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_trigger
+        JOIN pg_class ON pg_class.oid = pg_trigger.tgrelid
+        WHERE tgname = 'prevent_account_currency_update_trigger'
+          AND pg_class.relname = 'accounts'
+          AND NOT tgisinternal
+    ) THEN
+        CREATE TRIGGER prevent_account_currency_update_trigger
+        BEFORE UPDATE ON accounts
+        FOR EACH ROW
+        WHEN (OLD.currency IS DISTINCT FROM NEW.currency)
+        EXECUTE FUNCTION prevent_account_currency_update();
+    END IF;
+    END$$;
     """
   end
 
