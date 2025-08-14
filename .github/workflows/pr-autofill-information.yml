@@ -22,7 +22,8 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.payload.pull_request.number,
-              title
+              title,
+              assignees: [context.repo.owner]
             });
 
   labels:
