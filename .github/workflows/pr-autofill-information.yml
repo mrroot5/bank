@@ -16,7 +16,7 @@ jobs:
           script: |
             const branch = context.payload.pull_request.head.ref;
             const [prefix, ...rest] = branch.split('-');
-            const title = `${prefix.charAt(0).toUpperCase() + prefix.slice(1)}: ${rest.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}`;
+            const title = `${prefix.charAt(0).toUpperCase() + prefix.slice(1)}: ${rest.join(' ')}`;
 
             await github.rest.pulls.update({
               owner: context.repo.owner,
