@@ -6,8 +6,9 @@ defmodule Bank.Users.User do
 
   Generated with Phoenix.
   """
-  use Ecto.Schema
-  import Ecto.Changeset
+  use Bank.Ecto.Schema
+
+  alias Bank.Accounts.Account
 
   @roles [:superuser, :user]
 
@@ -18,14 +19,15 @@ defmodule Bank.Users.User do
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :current_password, :string, virtual: true, redact: true
-    field :confirmed_at, :utc_datetime
+    field :confirmed_at, :utc_datetime_usec
 
     field :roles, {:array, Ecto.Enum},
       values: @roles,
-      default: [:user],
-      redact: true
+      default: [:user]
 
-    timestamps(type: :utc_datetime)
+    has_many :accounts, Account
+
+    timestamps()
   end
 
   @spec changeset(Ecto.Schema.t(), map()) :: Ecto.Changeset.t()
@@ -118,7 +120,7 @@ defmodule Bank.Users.User do
   """
   @spec confirm_changeset(Ecto.Schema.t()) :: Ecto.Changeset.t()
   def confirm_changeset(user) do
-    now = DateTime.utc_now(:second)
+    now = DateTime.utc_now()
     change(user, confirmed_at: now)
   end
 
@@ -167,10 +169,11 @@ defmodule Bank.Users.User do
     changeset
     |> validate_required([:password])
     |> validate_length(:password, min: 12, max: 72)
-    # Examples of additional password validation:
-    # |> validate_format(:password, ~r/[a-z]/, message: "at least one lower case character")
-    # |> validate_format(:password, ~r/[A-Z]/, message: "at least one upper case character")
-    # |> validate_format(:password, ~r/[!?@#$%^&*_0-9]/, message: "at least one digit or punctuation character")
+    |> validate_format(:password, ~r/[a-z]/, message: "at least one lower case character")
+    |> validate_format(:password, ~r/[A-Z]/, message: "at least one upper case character")
+    |> validate_format(:password, ~r/[!?@#$%^&*_0-9]/,
+      message: "at least one digit or punctuation character"
+    )
     |> maybe_hash_password(opts)
   end
 

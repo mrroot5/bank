@@ -50,6 +50,10 @@ defmodule Bank.DataCase do
       assert "password is too short" in errors_on(changeset).password
       assert %{password: ["password is too short"]} = errors_on(changeset)
 
+  ## IMPORTANT
+
+  if you change this function, search for it in code, it is used in other modules as a private function
+
   """
   @spec errors_on(Ecto.Changeset.t()) :: Ecto.Changeset.t()
   def errors_on(changeset) do
