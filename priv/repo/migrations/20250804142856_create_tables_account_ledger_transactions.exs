@@ -147,10 +147,22 @@ defmodule Bank.Repo.Migrations.CreateTablesAccountLedgerTransactions do
 
   defp log_transaction_changes_trigger_up do
     """
-    CREATE TRIGGER transaction_audit_trigger
-    AFTER INSERT OR UPDATE ON transactions
-    FOR EACH ROW
-    EXECUTE FUNCTION log_transaction_changes();
+    DO $$
+    BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_trigger
+        JOIN pg_class ON pg_class.oid = pg_trigger.tgrelid
+        WHERE tgname = 'transaction_audit_trigger'
+          AND pg_class.relname = 'transactions'
+          AND NOT tgisinternal
+    ) THEN
+        CREATE TRIGGER transaction_audit_trigger
+        AFTER INSERT OR UPDATE ON transactions
+        FOR EACH ROW
+        EXECUTE FUNCTION log_transaction_changes();
+    END IF;
+    END$$;
     """
   end
 
