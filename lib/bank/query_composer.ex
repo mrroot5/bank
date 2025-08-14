@@ -47,6 +47,8 @@ defmodule Bank.QueryComposer do
   # Private function
   #
 
+  # Compose related functions
+
   defp apply_filter({"eq", field_name, value}, query),
     do: where(query, [t], field(t, ^field_name) == ^value)
 
@@ -66,6 +68,8 @@ defmodule Bank.QueryComposer do
     do: offset(query, ^offset)
 
   defp apply_filter(_, query), do: query
+
+  # Date related functions
 
   defp date_field_default(nil), do: :inserted_at
   defp date_field_default(field) when is_atom(field), do: field

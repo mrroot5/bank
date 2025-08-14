@@ -17,16 +17,38 @@ defmodule Bank.Transactions do
   alias Ecto.Schema
 
   @doc """
-  Returns the list of transactions.
+  Completes a transaction.
   """
-  @spec list(keyword()) :: [Schema.t()]
-  def list(opts \\ []) do
-    Transaction
-    |> QueryComposer.compose(opts[:filters])
-    |> QueryComposer.filter_by_date_range(opts)
-    |> order_by(^(opts[:order_by] || [desc: :updated_at]))
-    |> QueryComposer.maybe_preload(opts[:preload])
-    |> Repo.all()
+  @spec complete(Schema.t(), map()) ::
+          {:ok, {transaction :: Schema.t(), ledger :: Schema.t(), account :: Schema.t()}}
+          | {:error, Changeset.t()}
+  def complete(%Transaction{} = transaction, metadata \\ %{}) do
+    Repo.transact(fn ->
+      with {:ok, updated_transaction} <- update_transaction_status(transaction, metadata),
+           {:ok, {ledger, account}} <- create_ledger_entry(transaction) do
+        {:ok, {updated_transaction, ledger, account}}
+      end
+    end)
+  end
+
+  @doc """
+  Creates a transaction with support.
+  """
+  @spec create(map()) :: EctoUtils.write()
+  def create(attrs \\ %{}) do
+    %Transaction{}
+    |> Transaction.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Fails a transaction with reason.
+  """
+  @spec fail(Schema.t(), String.t(), pos_integer() | nil, map()) :: EctoUtils.write()
+  def fail(%Transaction{} = transaction, reason, error_code \\ nil, metadata \\ %{}) do
+    transaction
+    |> Transaction.fail_changeset(reason, error_code, metadata)
+    |> Repo.update()
   end
 
   @doc """
@@ -52,54 +74,24 @@ defmodule Bank.Transactions do
   end
 
   @doc """
-  Creates a transaction with support.
+  Returns the list of transactions.
   """
-  @spec create(map()) :: EctoUtils.write()
-  def create(attrs \\ %{}) do
-    %Transaction{}
-    |> Transaction.changeset(attrs)
-    |> Repo.insert()
+  @spec list(keyword()) :: [Schema.t()]
+  def list(opts \\ []) do
+    Transaction
+    |> QueryComposer.compose(opts[:filters])
+    |> QueryComposer.filter_by_date_range(opts)
+    |> order_by(^(opts[:order_by] || [desc: :updated_at]))
+    |> QueryComposer.maybe_preload(opts[:preload])
+    |> Repo.all()
   end
 
   @doc """
-  Completes a transaction.
+  Updates transaction status.
   """
-  @spec complete(Schema.t(), map()) ::
-          {:ok, {transaction :: Schema.t(), ledger :: Schema.t(), account :: Schema.t()}}
-          | {:error, Changeset.t()}
-  def complete(
-        %Transaction{} = transaction,
-        metadata \\ %{}
-      ) do
-    Repo.transact(fn ->
-      transaction_result =
-        transaction
-        |> Transaction.complete_changeset(metadata)
-        |> Repo.update()
-
-      ledger_attrs = %{
-        account_id: transaction.account_id,
-        amount: transaction.amount,
-        entry_type: infer_ledger_entry_type(transaction.transaction_type),
-        transaction_id: transaction.id
-      }
-
-      with {:ok, updated_transaction} <- transaction_result,
-           {:ok, {ledger, account}} <- Ledgers.create(ledger_attrs) do
-        {:ok, {updated_transaction, ledger, account}}
-      end
-    end)
-  end
-
-  @doc """
-  Fails a transaction with reason.
-  """
-  @spec fail(Schema.t(), String.t(), pos_integer() | nil, map()) :: EctoUtils.write()
-  def fail(%Transaction{} = transaction, reason, error_code \\ nil, metadata \\ %{}) do
-    transaction
-    |> Transaction.fail_changeset(reason, error_code, metadata)
-    |> Repo.update()
-  end
+  @spec update_status(Schema.t(), atom()) :: EctoUtils.write()
+  def update_status(%Transaction{} = transaction, status) when is_atom(status),
+    do: update_transaction(transaction, %{status: status})
 
   @doc """
   Updates a transaction.
@@ -113,12 +105,20 @@ defmodule Bank.Transactions do
     |> Repo.update()
   end
 
-  @doc """
-  Updates transaction status.
-  """
-  @spec update_status(Schema.t(), atom()) :: EctoUtils.write()
-  def update_status(%Transaction{} = transaction, status) when is_atom(status),
-    do: update_transaction(transaction, %{status: status})
+  #
+  # Private functions
+  #
+
+  defp create_ledger_entry(transaction) do
+    ledger_attrs = %{
+      account_id: transaction.account_id,
+      amount: transaction.amount,
+      entry_type: infer_ledger_entry_type(transaction.transaction_type),
+      transaction_id: transaction.id
+    }
+
+    Ledgers.create(ledger_attrs)
+  end
 
   @spec infer_ledger_entry_type(atom()) :: :credit | :debit
   defp infer_ledger_entry_type(transaction_types)
@@ -126,4 +126,10 @@ defmodule Bank.Transactions do
        do: :credit
 
   defp infer_ledger_entry_type(_transaction_types), do: :debit
+
+  defp update_transaction_status(transaction, metadata) do
+    transaction
+    |> Transaction.complete_changeset(metadata)
+    |> Repo.update()
+  end
 end

@@ -91,6 +91,10 @@ defmodule Bank.Transactions.Transaction do
     |> put_embed(:metadata, Map.merge(metadata, metadata_override))
   end
 
+  #
+  # Private functions
+  #
+
   @spec do_duplicate_transaction?(map()) :: boolean()
   defp do_duplicate_transaction?(changes) do
     filters = [

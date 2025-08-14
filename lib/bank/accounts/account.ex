@@ -73,6 +73,10 @@ defmodule Bank.Accounts.Account do
 
   def metadata_changeset(changeset, metadata), do: put_embed(changeset, :metadata, metadata)
 
+  #
+  # Private functions
+  #
+
   defp maybe_set_name(changeset, %{name: name}) when is_binary(name), do: changeset
 
   defp maybe_set_name(%{data: %{account_type: account_type}} = changeset, _attrs)

@@ -15,6 +15,10 @@ defmodule Bank.Accounts.SWIFTGenerator do
     bank_code <> @country_code <> location <> branch
   end
 
+  #
+  # Private functions
+  #
+
   defp random_alnum(n) do
     chars =
       Enum.map(?A..?Z, &<<&1>>) ++

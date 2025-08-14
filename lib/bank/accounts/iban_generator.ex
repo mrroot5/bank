@@ -24,8 +24,16 @@ defmodule Bank.Accounts.IBANGenerator do
     |> String.trim()
   end
 
-  @spec random_digits(pos_integer()) :: String.t()
-  defp random_digits(n) when n > 0, do: Enum.map_join(1..n, fn _ -> :rand.uniform(10) - 1 end)
+  #
+  # Private functions
+  #
+
+  defp char_to_int(ch) do
+    case ch do
+      <<c>> when c in ?A..?Z -> Integer.to_string(c - 55)
+      _ -> ch
+    end
+  end
 
   defp compute_check_digits(country, bban) do
     raw = bban <> country <> "00"
@@ -43,13 +51,6 @@ defmodule Bank.Accounts.IBANGenerator do
     |> String.pad_leading(2, "0")
   end
 
-  defp char_to_int(ch) do
-    case ch do
-      <<c>> when c in ?A..?Z -> Integer.to_string(c - 55)
-      _ -> ch
-    end
-  end
-
   defp mod97(digits) do
     digits
     |> String.graphemes()
@@ -60,4 +61,7 @@ defmodule Bank.Accounts.IBANGenerator do
       |> rem(97)
     end)
   end
+
+  @spec random_digits(pos_integer()) :: String.t()
+  defp random_digits(n) when n > 0, do: Enum.map_join(1..n, fn _ -> :rand.uniform(10) - 1 end)
 end
