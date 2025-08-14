@@ -1,9 +1,9 @@
 [
   # Dialyxir reported bug: https://github.com/jeremyjh/dialyxir/issues/568
-  ~r/lib\/bank\/users.ex:445/,
-  ~r/lib\/bank\/users.ex:438/,
-  ~r/lib\/bank\/users.ex:363/,
-  ~r/lib\/bank\/users.ex:217/,
+  ~r/lib\/bank\/users.ex:439/,
+  ~r/lib\/bank\/users.ex:379/,
+  ~r/lib\/bank\/users.ex:326/,
+  ~r/lib\/bank\/users.ex:432/,
   ~r/lib\/bank_web\/components\/core_components.ex:615/,
   ~r/lib\/bank_web\/components\/core_components.ex:627/,
   ~r/lib\/bank_web\/components\/core_components.ex:639/,
