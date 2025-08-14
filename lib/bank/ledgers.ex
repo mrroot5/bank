@@ -16,54 +16,6 @@ defmodule Bank.Ledgers do
   alias Ecto.Schema
 
   @doc """
-  Returns the list of ledger entries.
-
-  ## Options
-
-    * `:account_id` - Filter by account ID
-    * `:transaction_id` - Filter by transaction ID
-    * `:entry_type` - Filter by entry type (debit/credit)
-    * `:origin` - Filter by origin
-    * `:from_date` - Filter entries after this date
-    * `:to_date` - Filter entries before this date
-    * `:preload` - List of associations to preload
-    * `:order_by` - Order results (default: inserted_at desc)
-    * `:limit` - Maximum number of results
-    * `:offset` - Number of results to skip
-  """
-  @spec list(keyword()) :: [Schema.t()]
-  def list(opts \\ []) do
-    Ledger
-    |> QueryComposer.compose(opts[:filters])
-    |> QueryComposer.filter_by_date_range(opts)
-    |> order_by(^(opts[:order_by] || [desc: :inserted_at]))
-    |> QueryComposer.maybe_preload(opts[:preload])
-    |> Repo.all()
-  end
-
-  @doc """
-  Gets a single ledger entry.
-
-  Raises `Ecto.NoResultsError` if the Ledger does not exist.
-  """
-  @spec get!(String.t(), keyword()) :: Schema.t()
-  def get!(id, opts \\ []) do
-    Ledger
-    |> QueryComposer.maybe_preload(opts[:preload])
-    |> Repo.get!(id)
-  end
-
-  @doc """
-  Get by whatever field you want
-  """
-  @spec get_by(map() | keyword(), keyword()) :: Schema.t()
-  def get_by(clauses, opts \\ []) do
-    Ledger
-    |> QueryComposer.maybe_preload(opts[:preload])
-    |> Repo.get_by(clauses)
-  end
-
-  @doc """
   Creates a ledger entry.
 
   Ledger entries are immutable once created.
@@ -93,6 +45,45 @@ defmodule Bank.Ledgers do
       end
     end)
   end
+
+  @doc """
+  Gets a single ledger entry.
+
+  Raises `Ecto.NoResultsError` if the Ledger does not exist.
+  """
+  @spec get!(String.t(), keyword()) :: Schema.t()
+  def get!(id, opts \\ []) do
+    Ledger
+    |> QueryComposer.maybe_preload(opts[:preload])
+    |> Repo.get!(id)
+  end
+
+  @doc """
+  Get by whatever field you want
+  """
+  @spec get_by(map() | keyword(), keyword()) :: Schema.t()
+  def get_by(clauses, opts \\ []) do
+    Ledger
+    |> QueryComposer.maybe_preload(opts[:preload])
+    |> Repo.get_by(clauses)
+  end
+
+  @doc """
+  Returns the list of ledger entries.
+  """
+  @spec list(keyword()) :: [Schema.t()]
+  def list(opts \\ []) do
+    Ledger
+    |> QueryComposer.compose(opts[:filters])
+    |> QueryComposer.filter_by_date_range(opts)
+    |> order_by(^(opts[:order_by] || [desc: :inserted_at]))
+    |> QueryComposer.maybe_preload(opts[:preload])
+    |> Repo.all()
+  end
+
+  #
+  # Private functions
+  #
 
   @spec calculate_new_balance(Schema.t(), Decimal.t()) :: Decimal.t()
   defp calculate_new_balance(%{amount: amount, entry_type: :credit}, balance),

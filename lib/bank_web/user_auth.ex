@@ -20,6 +20,17 @@ defmodule BankWeb.UserAuth do
   @remember_me_options [sign: true, max_age: @max_age, same_site: "Lax"]
 
   @doc """
+  Authenticates the user by looking into the session
+  and remember me token.
+  """
+  @spec fetch_current_user(Conn.t(), keyword()) :: Conn.t()
+  def fetch_current_user(conn, _opts) do
+    {user_token, conn} = ensure_user_token(conn)
+    user = user_token && Users.get_user_by_session_token(user_token)
+    assign(conn, :current_user, user)
+  end
+
+  @doc """
   Logs the user in.
 
   It renews the session ID and clears the whole session
@@ -61,17 +72,6 @@ defmodule BankWeb.UserAuth do
     |> renew_session()
     |> delete_resp_cookie(@remember_me_cookie)
     |> redirect(to: ~p"/")
-  end
-
-  @doc """
-  Authenticates the user by looking into the session
-  and remember me token.
-  """
-  @spec fetch_current_user(Conn.t(), keyword()) :: Conn.t()
-  def fetch_current_user(conn, _opts) do
-    {user_token, conn} = ensure_user_token(conn)
-    user = user_token && Users.get_user_by_session_token(user_token)
-    assign(conn, :current_user, user)
   end
 
   @doc """
@@ -174,6 +174,10 @@ defmodule BankWeb.UserAuth do
     end
   end
 
+  #
+  # Private functions
+  #
+
   @spec allowed_admin?(map(), Ecto.Schema.t()) :: boolean()
   defp allowed_admin?(session, user) do
     is_headquarters? = Map.get(session, "is_headquarters", false)
@@ -184,6 +188,28 @@ defmodule BankWeb.UserAuth do
       )
   end
 
+  @spec ensure_user_token(Conn.t()) :: {binary() | nil, Conn.t()}
+  defp ensure_user_token(conn) do
+    if token = get_session(conn, :user_token) do
+      {token, conn}
+    else
+      conn = fetch_cookies(conn, signed: [@remember_me_cookie])
+
+      if token = conn.cookies[@remember_me_cookie] do
+        {token, put_token_in_session(conn, token)}
+      else
+        {nil, conn}
+      end
+    end
+  end
+
+  @spec maybe_store_return_to(Conn.t()) :: Conn.t()
+  defp maybe_store_return_to(%{method: "GET"} = conn) do
+    put_session(conn, :user_return_to, current_path(conn))
+  end
+
+  defp maybe_store_return_to(conn), do: conn
+
   @spec maybe_write_remember_me_cookie(Conn.t(), binary(), map()) :: Conn.t()
   defp maybe_write_remember_me_cookie(conn, token, %{"remember_me" => "true"}) do
     put_resp_cookie(conn, @remember_me_cookie, token, @remember_me_options)
@@ -191,6 +217,22 @@ defmodule BankWeb.UserAuth do
 
   defp maybe_write_remember_me_cookie(conn, _token, _params) do
     conn
+  end
+
+  @spec mount_current_user(Socket.t(), map()) :: Socket.t()
+  defp mount_current_user(socket, session) do
+    Phoenix.Component.assign_new(socket, :current_user, fn ->
+      if user_token = session["user_token"] do
+        Users.get_user_by_session_token(user_token)
+      end
+    end)
+  end
+
+  @spec put_token_in_session(Conn.t(), binary()) :: Conn.t()
+  defp put_token_in_session(conn, token) do
+    conn
+    |> put_session(:user_token, token)
+    |> put_session(:live_socket_id, "users_sessions:#{Base.url_encode64(token)}")
   end
 
   # This function renews the session ID and erases the whole
@@ -216,44 +258,6 @@ defmodule BankWeb.UserAuth do
     |> configure_session(renew: true)
     |> clear_session()
   end
-
-  @spec ensure_user_token(Conn.t()) :: {binary() | nil, Conn.t()}
-  defp ensure_user_token(conn) do
-    if token = get_session(conn, :user_token) do
-      {token, conn}
-    else
-      conn = fetch_cookies(conn, signed: [@remember_me_cookie])
-
-      if token = conn.cookies[@remember_me_cookie] do
-        {token, put_token_in_session(conn, token)}
-      else
-        {nil, conn}
-      end
-    end
-  end
-
-  @spec mount_current_user(Socket.t(), map()) :: Socket.t()
-  defp mount_current_user(socket, session) do
-    Phoenix.Component.assign_new(socket, :current_user, fn ->
-      if user_token = session["user_token"] do
-        Users.get_user_by_session_token(user_token)
-      end
-    end)
-  end
-
-  @spec put_token_in_session(Conn.t(), binary()) :: Conn.t()
-  defp put_token_in_session(conn, token) do
-    conn
-    |> put_session(:user_token, token)
-    |> put_session(:live_socket_id, "users_sessions:#{Base.url_encode64(token)}")
-  end
-
-  @spec maybe_store_return_to(Conn.t()) :: Conn.t()
-  defp maybe_store_return_to(%{method: "GET"} = conn) do
-    put_session(conn, :user_return_to, current_path(conn))
-  end
-
-  defp maybe_store_return_to(conn), do: conn
 
   # There is no typespec for ~p sigil so be careful. Internally it uses Phoenix.Params protocol where its type is term
   # BUT the source code looks like it returns a string.

@@ -18,36 +18,17 @@ defmodule Bank.Accounts do
   alias Ecto.UUID
 
   @doc """
-  Returns the list of accounts.
-  """
-  @spec list(keyword()) :: [Schema.t()]
-  def list(opts \\ []) do
-    Account
-    |> QueryComposer.compose(opts)
-    |> QueryComposer.maybe_preload(opts[:preload])
-    |> Repo.all()
-  end
+  Closes an account.
 
-  @doc """
-  Gets a single account.
-
-  Raises `Ecto.NoResultsError` if the Account does not exist.
+  Only accounts with zero balance can be closed.
   """
-  @spec get!(UUID.t(), keyword()) :: Schema.t()
-  def get!(id, opts \\ []) do
-    Account
-    |> QueryComposer.maybe_preload(opts[:preload])
-    |> Repo.get!(id)
-  end
-
-  @doc """
-  Get by whatever field you want
-  """
-  @spec get_by(map() | keyword(), keyword()) :: Schema.t() | nil
-  def get_by(clauses, opts \\ []) do
-    Account
-    |> QueryComposer.maybe_preload(opts[:preload])
-    |> Repo.get_by(clauses)
+  @spec close_account(Schema.t()) :: EctoUtils.write()
+  def close_account(%Account{balance: balance} = account) do
+    if Decimal.eq?(balance, Decimal.new("0")) do
+      update_account(account, %{status: :closed})
+    else
+      {:error, :non_zero_balance}
+    end
   end
 
   @doc """
@@ -74,6 +55,23 @@ defmodule Bank.Accounts do
     insert_account(changeset, attrs, attempts)
   end
 
+  @doc """
+  Creates a unique account number.
+
+  Retries up to the specified number of attempts if duplicates are found.
+  """
+  @spec create_account_number(map(), non_neg_integer()) :: {:ok | :error, String.t()}
+  def create_account_number(attrs \\ %{}, attempts \\ 10) do
+    account_number = do_create_account_number(attrs[:account_number])
+    changeset = Account.account_number_changeset(%Account{}, %{account_number: account_number})
+
+    cond do
+      changeset.valid? -> {:ok, account_number}
+      attempts <= 0 -> {:error, "Max attempts"}
+      true -> create_account_number(attrs, attempts - 1)
+    end
+  end
+
   @spec create_metadata(String.t()) :: map()
   def create_metadata(account_number) do
     %{
@@ -81,6 +79,54 @@ defmodule Bank.Accounts do
       swift: SWIFTGenerator.generate()
     }
   end
+
+  @doc """
+  Gets a single account.
+
+  Raises `Ecto.NoResultsError` if the Account does not exist.
+  """
+  @spec get!(UUID.t(), keyword()) :: Schema.t()
+  def get!(id, opts \\ []) do
+    Account
+    |> QueryComposer.maybe_preload(opts[:preload])
+    |> Repo.get!(id)
+  end
+
+  @doc """
+  Get by whatever field you want
+  """
+  @spec get_by(map() | keyword(), keyword()) :: Schema.t() | nil
+  def get_by(clauses, opts \\ []) do
+    Account
+    |> QueryComposer.maybe_preload(opts[:preload])
+    |> Repo.get_by(clauses)
+  end
+
+  @doc """
+  Returns the list of accounts.
+  """
+  @spec list(keyword()) :: [Schema.t()]
+  def list(opts \\ []) do
+    Account
+    |> QueryComposer.compose(opts)
+    |> QueryComposer.maybe_preload(opts[:preload])
+    |> Repo.all()
+  end
+
+  @doc """
+  Reactivates a suspended account.
+  """
+  @spec reactivate_account(Schema.t()) :: EctoUtils.write()
+  def reactivate_account(%Account{status: :suspended} = account),
+    do: update_account(account, %{status: :active})
+
+  def reactivate_account(%Account{}), do: {:error, :invalid_status}
+
+  @doc """
+  Suspends an account.
+  """
+  @spec suspend_account(Schema.t()) :: EctoUtils.write()
+  def suspend_account(%Account{} = account), do: update_account(account, %{status: :suspended})
 
   @doc """
   Updates an account.
@@ -100,51 +146,9 @@ defmodule Bank.Accounts do
     |> Repo.update()
   end
 
-  @doc """
-  Suspends an account.
-  """
-  @spec suspend_account(Schema.t()) :: EctoUtils.write()
-  def suspend_account(%Account{} = account), do: update_account(account, %{status: :suspended})
-
-  @doc """
-  Closes an account.
-
-  Only accounts with zero balance can be closed.
-  """
-  @spec close_account(Schema.t()) :: EctoUtils.write()
-  def close_account(%Account{balance: balance} = account) do
-    if Decimal.eq?(balance, Decimal.new("0")) do
-      update_account(account, %{status: :closed})
-    else
-      {:error, :non_zero_balance}
-    end
-  end
-
-  @doc """
-  Reactivates a suspended account.
-  """
-  @spec reactivate_account(Schema.t()) :: EctoUtils.write()
-  def reactivate_account(%Account{status: :suspended} = account),
-    do: update_account(account, %{status: :active})
-
-  def reactivate_account(%Account{}), do: {:error, :invalid_status}
-
-  @doc """
-  Creates a unique account number.
-
-  Retries up to the specified number of attempts if duplicates are found.
-  """
-  @spec create_account_number(map(), non_neg_integer()) :: {:ok | :error, String.t()}
-  def create_account_number(attrs \\ %{}, attempts \\ 10) do
-    account_number = do_create_account_number(attrs[:account_number])
-    changeset = Account.account_number_changeset(%Account{}, %{account_number: account_number})
-
-    cond do
-      changeset.valid? -> {:ok, account_number}
-      attempts <= 0 -> {:error, "Max attempts"}
-      true -> create_account_number(attrs, attempts - 1)
-    end
-  end
+  #
+  # Private functions
+  #
 
   @spec do_create_account_number(String.t() | nil) :: String.t()
   defp do_create_account_number(nil) do
