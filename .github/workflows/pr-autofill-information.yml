@@ -9,9 +9,7 @@ jobs:
       if: |
         (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
       runs-on: ubuntu-latest
-      permissions:
-      pull-requests: write
-      issues: write
+      permissions: { pull-requests: write }
       steps:
         - uses: actions/github-script@v7
           with:
