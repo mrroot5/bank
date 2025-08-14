@@ -14,6 +14,10 @@ services:
     depends_on:
       postgres_test:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 2G
     entrypoint: ['./docker/entrypoint.sh']
     environment:
       MIX_ENV: test

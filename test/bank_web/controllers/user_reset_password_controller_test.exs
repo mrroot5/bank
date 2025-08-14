@@ -1,13 +1,14 @@
 defmodule BankWeb.UserResetPasswordControllerTest do
   use BankWeb.ConnCase, async: true
 
-  import Bank.UsersFixtures
-
   alias Bank.Repo
   alias Bank.Users
+  alias Bank.UsersFixtures
+
+  @new_valid_password "New valid passw0rd!"
 
   setup do
-    %{user: user_fixture()}
+    %{user: UsersFixtures.fixture()}
   end
 
   describe "GET /users/reset_password" do
@@ -52,7 +53,7 @@ defmodule BankWeb.UserResetPasswordControllerTest do
   describe "GET /users/reset_password/:token" do
     setup %{user: user} do
       token =
-        extract_user_token(fn url ->
+        UsersFixtures.extract_user_token(fn url ->
           Users.deliver_user_reset_password_instructions(user, url)
         end)
 
@@ -76,7 +77,7 @@ defmodule BankWeb.UserResetPasswordControllerTest do
   describe "PUT /users/reset_password/:token" do
     setup %{user: user} do
       token =
-        extract_user_token(fn url ->
+        UsersFixtures.extract_user_token(fn url ->
           Users.deliver_user_reset_password_instructions(user, url)
         end)
 
@@ -87,8 +88,8 @@ defmodule BankWeb.UserResetPasswordControllerTest do
       conn =
         put(conn, ~p"/users/reset_password/#{token}", %{
           "user" => %{
-            "password" => "new valid password",
-            "password_confirmation" => "new valid password"
+            "password" => @new_valid_password,
+            "password_confirmation" => @new_valid_password
           }
         })
 
@@ -98,7 +99,7 @@ defmodule BankWeb.UserResetPasswordControllerTest do
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~
                "Password reset successfully"
 
-      assert Users.get_user_by_email_and_password(user.email, "new valid password")
+      assert Users.get_user_by_email_and_password(user.email, @new_valid_password)
     end
 
     test "does not reset password on invalid data", %{conn: conn, token: token} do
