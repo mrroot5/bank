@@ -2,6 +2,7 @@ defmodule BankWeb.Router do
   use BankWeb, :router
 
   import BankWeb.UserAuth
+  import Oban.Web.Router
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -92,5 +93,7 @@ defmodule BankWeb.Router do
         live "/:id/show/edit", Show, :edit
       end
     end
+
+    oban_dashboard "/oban", resolver: Bank.Oban.Resolver
   end
 end
