@@ -7,6 +7,8 @@ defmodule Bank.Application do
 
   @impl Application
   def start(_type, _args) do
+    if Application.get_env(Bank, :env) == :prod, do: Oban.Telemetry.attach_default_logger()
+
     children = [
       BankWeb.Telemetry,
       Bank.Repo,
@@ -14,6 +16,7 @@ defmodule Bank.Application do
       {Phoenix.PubSub, name: Bank.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: Bank.Finch},
+      {Oban, Application.fetch_env!(:bank, Oban)},
       # Start a worker by calling: Bank.Worker.start_link(arg)
       # {Bank.Worker, arg},
       # Start to serve requests, typically the last entry

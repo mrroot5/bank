@@ -35,6 +35,13 @@ config :bank, Bank.Cldr,
   # a single locale, for fast compilation in dev / test
   locales: ["en-*", "es-*"]
 
+config :bank, Oban,
+  engine: Oban.Engines.Basic,
+  # queues name: limit is a local concurrency limit by node
+  queues: [default: 1, transactions: 2],
+  notifier: Oban.Notifiers.PG,
+  repo: Bank.Repo
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.17.11",

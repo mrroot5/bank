@@ -119,7 +119,8 @@ defmodule BankWeb.UserAuth do
     current_user = socket.assigns.current_user
 
     if current_user do
-      allowed_admin?(session, current_user)
+      headquarters_ensure_superuser!(current_user, session)
+
       {:cont, socket}
     else
       socket =
@@ -174,20 +175,23 @@ defmodule BankWeb.UserAuth do
     end
   end
 
+  @doc """
+  This function authorize access to hq panel if the user has superuser role
+  """
+  @spec headquarters_ensure_superuser!(Ecto.Schema.t(), map()) :: no_return()
+  def headquarters_ensure_superuser!(user, session \\ %{"is_headquarters" => false})
+
+  def headquarters_ensure_superuser!(user, %{"is_headquarters" => true}) do
+    Bodyguard.permit!(BankWeb.Headquarters.Policies, "action", user, [],
+      error_message: "You are not allowed to be here"
+    )
+  end
+
+  def headquarters_ensure_superuser!(_user, _session), do: :ok
+
   #
   # Private functions
   #
-
-  @spec allowed_admin?(map(), Ecto.Schema.t()) :: boolean()
-  defp allowed_admin?(session, user) do
-    is_headquarters? = Map.get(session, "is_headquarters", false)
-
-    is_headquarters? and
-      Bodyguard.permit!(BankWeb.Headquarters.Policies, "action", user, [],
-        error_message: "You are not allowed to be here"
-      )
-  end
-
   @spec ensure_user_token(Conn.t()) :: {binary() | nil, Conn.t()}
   defp ensure_user_token(conn) do
     if token = get_session(conn, :user_token) do
