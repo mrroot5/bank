@@ -94,6 +94,6 @@ defmodule BankWeb.Router do
       end
     end
 
-    oban_dashboard "/oban", resolver: Bank.Oban.Resolver
+    oban_dashboard("/oban", resolver: Bank.Oban.Resolver)
   end
 end
