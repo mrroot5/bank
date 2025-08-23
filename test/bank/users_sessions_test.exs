@@ -1,11 +1,11 @@
 defmodule Bank.UsersSessionsTest do
   use Bank.DataCase, async: true
 
-  alias Bank.UsersSessions
+  alias Bank.Repo
   alias Bank.Users.User
   alias Bank.Users.UserToken
   alias Bank.UsersFixtures
-  alias Bank.Repo
+  alias Bank.UsersSessions
 
   describe "generate_user_session_token/1" do
     setup do

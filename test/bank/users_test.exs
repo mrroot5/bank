@@ -6,7 +6,6 @@ defmodule Bank.UsersTest do
   alias Bank.Users.UserToken
   alias Bank.UsersFixtures
   alias Bank.UsersSessions
-  alias Bank.UsersSettings
 
   @new_valid_password "New valid passw0rd!"
 

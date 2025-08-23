@@ -1,13 +1,13 @@
 defmodule Bank.UsersSettingsTest do
   use Bank.DataCase, async: true
 
-  alias Bank.UsersSettings
+  alias Bank.Repo
   alias Bank.Users
   alias Bank.Users.User
   alias Bank.Users.UserToken
   alias Bank.UsersFixtures
   alias Bank.UsersSessions
-  alias Bank.Repo
+  alias Bank.UsersSettings
 
   @new_valid_password "New valid passw0rd!"
 
