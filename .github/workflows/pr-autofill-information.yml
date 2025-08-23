@@ -94,6 +94,14 @@ jobs:
             documentation
             elixir
 
+      # Documentation labels
+      - if: startsWith(github.event.pull_request.head.ref, 'refactor')
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: |
+            refactor
+            elixir
+
       # Reopened PR labels
       - if: github.event.action == 'reopened'
         uses: actions-ecosystem/action-add-labels@v1
