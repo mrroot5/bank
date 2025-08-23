@@ -8,8 +8,10 @@
 import Config
 
 config :bank,
+  default_currency: "EUR",
   ecto_repos: [Bank.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  env: config_env(),
+  generators: [timestamp_type: :utc_datetime_usec]
 
 # Configures the endpoint
 config :bank, BankWeb.Endpoint,
@@ -61,6 +63,14 @@ config :ex_money,
   # each hour
   exchange_rates_retrieve_every: 3_600_000
 
+# Configures Elixir's Logger
+config :logger, :console,
+  format: "$time $metadata[$level] $message\n",
+  metadata: [:request_id]
+
+# Use Jason for JSON parsing in Phoenix
+config :phoenix, :json_library, Jason
+
 # Configure tailwind (the version is required)
 config :tailwind,
   version: "3.4.3",
@@ -72,14 +82,6 @@ config :tailwind,
     ),
     cd: Path.expand("../assets", __DIR__)
   ]
-
-# Configures Elixir's Logger
-config :logger, :console,
-  format: "$time $metadata[$level] $message\n",
-  metadata: [:request_id]
-
-# Use Jason for JSON parsing in Phoenix
-config :phoenix, :json_library, Jason
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

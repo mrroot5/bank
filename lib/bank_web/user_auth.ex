@@ -8,7 +8,7 @@ defmodule BankWeb.UserAuth do
   import Plug.Conn
   import Phoenix.Controller
 
-  alias Bank.Users
+  alias Bank.UsersSessions
   alias Phoenix.LiveView.Socket
   alias Plug.Conn
 
@@ -26,7 +26,7 @@ defmodule BankWeb.UserAuth do
   @spec fetch_current_user(Conn.t(), keyword()) :: Conn.t()
   def fetch_current_user(conn, _opts) do
     {user_token, conn} = ensure_user_token(conn)
-    user = user_token && Users.get_user_by_session_token(user_token)
+    user = user_token && UsersSessions.get_user_by_session_token(user_token)
     assign(conn, :current_user, user)
   end
 
@@ -44,7 +44,7 @@ defmodule BankWeb.UserAuth do
   """
   @spec log_in_user(Conn.t(), Ecto.Schema.t(), map()) :: Conn.t()
   def log_in_user(conn, user, params \\ %{}) do
-    token = Users.generate_user_session_token(user)
+    token = UsersSessions.generate_user_session_token(user)
     user_return_to = get_session(conn, :user_return_to)
 
     conn
@@ -62,7 +62,7 @@ defmodule BankWeb.UserAuth do
   @spec log_out_user(Conn.t()) :: Conn.t()
   def log_out_user(conn) do
     user_token = get_session(conn, :user_token)
-    user_token && Users.delete_user_session_token(user_token)
+    user_token && UsersSessions.delete_user_session_token(user_token)
 
     if live_socket_id = get_session(conn, :live_socket_id) do
       BankWeb.Endpoint.broadcast(live_socket_id, "disconnect", %{})
@@ -227,7 +227,7 @@ defmodule BankWeb.UserAuth do
   defp mount_current_user(socket, session) do
     Phoenix.Component.assign_new(socket, :current_user, fn ->
       if user_token = session["user_token"] do
-        Users.get_user_by_session_token(user_token)
+        UsersSessions.get_user_by_session_token(user_token)
       end
     end)
   end

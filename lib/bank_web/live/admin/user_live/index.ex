@@ -7,7 +7,7 @@ defmodule BankWeb.Headquarters.UserLive.Index do
 
   @impl LiveView
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :users, Users.list_users())}
+    {:ok, stream(socket, :users, Users.list())}
   end
 
   @impl LiveView

@@ -2,6 +2,7 @@ defmodule BankWeb.UserConfirmationController do
   use BankWeb, :controller
 
   alias Bank.Users
+  alias Bank.UsersSessions
   alias Plug.Conn
 
   @spec new(Conn.t(), map()) :: Conn.t()
@@ -12,7 +13,7 @@ defmodule BankWeb.UserConfirmationController do
   @spec create(Conn.t(), map()) :: Conn.t()
   def create(conn, %{"user" => %{"email" => email}}) do
     if user = Users.get_user_by_email(email) do
-      Users.deliver_user_confirmation_instructions(
+      UsersSessions.deliver_user_confirmation_instructions(
         user,
         &url(~p"/users/confirm/#{&1}")
       )
@@ -36,7 +37,7 @@ defmodule BankWeb.UserConfirmationController do
   # leaked token giving the user access to the account.
   @spec update(Conn.t(), map()) :: Conn.t()
   def update(conn, %{"token" => token}) do
-    case Users.confirm_user(token) do
+    case UsersSessions.confirm_user(token) do
       {:ok, _} ->
         conn
         |> put_flash(:info, "User confirmed successfully.")
