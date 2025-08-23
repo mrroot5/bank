@@ -4,6 +4,7 @@ defmodule BankWeb.UserSettingsControllerTest do
   import Bank.UsersFixtures
 
   alias Bank.Users
+  alias Bank.UsersSettings
 
   @new_valid_password "New valid passw0rd!"
 
@@ -105,7 +106,11 @@ defmodule BankWeb.UserSettingsControllerTest do
 
       token =
         extract_user_token(fn url ->
-          Users.deliver_user_update_email_instructions(%{user | email: email}, user.email, url)
+          UsersSettings.deliver_user_update_email_instructions(
+            %{user | email: email},
+            user.email,
+            url
+          )
         end)
 
       %{token: token, email: email}

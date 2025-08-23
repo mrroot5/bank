@@ -2,6 +2,7 @@ defmodule BankWeb.UserSettingsController do
   use BankWeb, :controller
 
   alias Bank.Users
+  alias Bank.UsersSettings
   alias BankWeb.UserAuth
   alias Plug.Conn
 
@@ -17,9 +18,9 @@ defmodule BankWeb.UserSettingsController do
     %{"current_password" => password, "user" => user_params} = params
     user = conn.assigns.current_user
 
-    case Users.apply_user_email(user, password, user_params) do
+    case UsersSettings.apply_user_email(user, password, user_params) do
       {:ok, applied_user} ->
-        Users.deliver_user_update_email_instructions(
+        UsersSettings.deliver_user_update_email_instructions(
           applied_user,
           user.email,
           &url(~p"/users/settings/confirm_email/#{&1}")
@@ -42,7 +43,7 @@ defmodule BankWeb.UserSettingsController do
     %{"current_password" => password, "user" => user_params} = params
     user = conn.assigns.current_user
 
-    case Users.update_user_password(user, password, user_params) do
+    case UsersSettings.update_user_password(user, password, user_params) do
       {:ok, user} ->
         conn
         |> put_flash(:info, "Password updated successfully.")
@@ -56,7 +57,7 @@ defmodule BankWeb.UserSettingsController do
 
   @spec confirm_email(Conn.t(), map()) :: Conn.t()
   def confirm_email(conn, %{"token" => token}) do
-    case Users.update_user_email(conn.assigns.current_user, token) do
+    case UsersSettings.update_user_email(conn.assigns.current_user, token) do
       :ok ->
         conn
         |> put_flash(:info, "Email changed successfully.")
@@ -74,7 +75,7 @@ defmodule BankWeb.UserSettingsController do
     user = conn.assigns.current_user
 
     conn
-    |> assign(:email_changeset, Users.change_user_email(user))
+    |> assign(:email_changeset, UsersSettings.change_user_email(user))
     |> assign(:password_changeset, Users.change_user_password(user))
   end
 end

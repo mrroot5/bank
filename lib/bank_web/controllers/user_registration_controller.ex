@@ -3,6 +3,7 @@ defmodule BankWeb.UserRegistrationController do
 
   alias Bank.Users
   alias Bank.Users.User
+  alias Bank.UsersSessions
   alias BankWeb.UserAuth
   alias Plug.Conn
 
@@ -17,7 +18,7 @@ defmodule BankWeb.UserRegistrationController do
     case Users.register_user(user_params) do
       {:ok, user} ->
         {:ok, _} =
-          Users.deliver_user_confirmation_instructions(
+          UsersSessions.deliver_user_confirmation_instructions(
             user,
             &url(~p"/users/confirm/#{&1}")
           )

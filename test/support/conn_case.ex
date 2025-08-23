@@ -59,7 +59,7 @@ defmodule BankWeb.ConnCase do
   """
   @spec log_in_user(Conn.t(), Ecto.Schema.t()) :: Conn.t()
   def log_in_user(conn, user) do
-    token = Bank.Users.generate_user_session_token(user)
+    token = Bank.UsersSessions.generate_user_session_token(user)
 
     conn
     |> Phoenix.ConnTest.init_test_session(%{})

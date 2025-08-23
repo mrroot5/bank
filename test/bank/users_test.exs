@@ -5,6 +5,8 @@ defmodule Bank.UsersTest do
   alias Bank.Users.User
   alias Bank.Users.UserToken
   alias Bank.UsersFixtures
+  alias Bank.UsersSessions
+  alias Bank.UsersSettings
 
   @new_valid_password "New valid passw0rd!"
 
@@ -133,7 +135,7 @@ defmodule Bank.UsersTest do
 
   describe "change_user_email/2" do
     test "returns a user changeset" do
-      assert %Ecto.Changeset{} = changeset = Users.change_user_email(%User{})
+      assert %Ecto.Changeset{} = changeset = UsersSettings.change_user_email(%User{})
       assert changeset.required == [:email]
     end
   end
@@ -144,13 +146,17 @@ defmodule Bank.UsersTest do
     end
 
     test "requires email to change", %{user: user} do
-      {:error, changeset} = Users.apply_user_email(user, UsersFixtures.valid_user_password(), %{})
+      {:error, changeset} =
+        UsersSettings.apply_user_email(user, UsersFixtures.valid_user_password(), %{})
+
       assert %{email: ["did not change"]} = errors_on(changeset)
     end
 
     test "validates email", %{user: user} do
       {:error, changeset} =
-        Users.apply_user_email(user, UsersFixtures.valid_user_password(), %{email: "not valid"})
+        UsersSettings.apply_user_email(user, UsersFixtures.valid_user_password(), %{
+          email: "not valid"
+        })
 
       assert %{email: ["must have the @ sign and no spaces"]} = errors_on(changeset)
     end
@@ -159,7 +165,9 @@ defmodule Bank.UsersTest do
       too_long = String.duplicate("db", 100)
 
       {:error, changeset} =
-        Users.apply_user_email(user, UsersFixtures.valid_user_password(), %{email: too_long})
+        UsersSettings.apply_user_email(user, UsersFixtures.valid_user_password(), %{
+          email: too_long
+        })
 
       assert "should be at most 160 character(s)" in errors_on(changeset).email
     end
@@ -168,14 +176,16 @@ defmodule Bank.UsersTest do
       %{email: email} = UsersFixtures.fixture()
       password = UsersFixtures.valid_user_password()
 
-      {:error, changeset} = Users.apply_user_email(user, password, %{email: email})
+      {:error, changeset} = UsersSettings.apply_user_email(user, password, %{email: email})
 
       assert "has already been taken" in errors_on(changeset).email
     end
 
     test "validates current password", %{user: user} do
       {:error, changeset} =
-        Users.apply_user_email(user, "invalid", %{email: UsersFixtures.unique_user_email()})
+        UsersSettings.apply_user_email(user, "invalid", %{
+          email: UsersFixtures.unique_user_email()
+        })
 
       assert %{current_password: ["is not valid"]} = errors_on(changeset)
     end
@@ -184,7 +194,7 @@ defmodule Bank.UsersTest do
       email = UsersFixtures.unique_user_email()
 
       {:ok, user} =
-        Users.apply_user_email(user, UsersFixtures.valid_user_password(), %{email: email})
+        UsersSettings.apply_user_email(user, UsersFixtures.valid_user_password(), %{email: email})
 
       assert user.email == email
       assert Users.get_user!(user.id).email != email
@@ -199,7 +209,7 @@ defmodule Bank.UsersTest do
     test "sends token through notification", %{user: user} do
       token =
         UsersFixtures.extract_user_token(fn url ->
-          Users.deliver_user_update_email_instructions(user, "current@example.com", url)
+          UsersSettings.deliver_user_update_email_instructions(user, "current@example.com", url)
         end)
 
       {:ok, token} = Base.url_decode64(token, padding: false)
@@ -217,14 +227,18 @@ defmodule Bank.UsersTest do
 
       token =
         UsersFixtures.extract_user_token(fn url ->
-          Users.deliver_user_update_email_instructions(%{user | email: email}, user.email, url)
+          UsersSettings.deliver_user_update_email_instructions(
+            %{user | email: email},
+            user.email,
+            url
+          )
         end)
 
       %{user: user, token: token, email: email}
     end
 
     test "updates the email with a valid token", %{user: user, token: token, email: email} do
-      assert Users.update_user_email(user, token) == :ok
+      assert UsersSettings.update_user_email(user, token) == :ok
       changed_user = Repo.get!(User, user.id)
       assert changed_user.email != user.email
       assert changed_user.email == email
@@ -234,20 +248,22 @@ defmodule Bank.UsersTest do
     end
 
     test "does not update email with invalid token", %{user: user} do
-      assert Users.update_user_email(user, "oops") == :error
+      assert UsersSettings.update_user_email(user, "oops") == :error
       assert Repo.get!(User, user.id).email == user.email
       assert Repo.get_by(UserToken, user_id: user.id)
     end
 
     test "does not update email if user email changed", %{user: user, token: token} do
-      assert Users.update_user_email(%{user | email: "current@example.com"}, token) == :error
+      assert UsersSettings.update_user_email(%{user | email: "current@example.com"}, token) ==
+               :error
+
       assert Repo.get!(User, user.id).email == user.email
       assert Repo.get_by(UserToken, user_id: user.id)
     end
 
     test "does not update email if token expired", %{user: user, token: token} do
       {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
-      assert Users.update_user_email(user, token) == :error
+      assert UsersSettings.update_user_email(user, token) == :error
       assert Repo.get!(User, user.id).email == user.email
       assert Repo.get_by(UserToken, user_id: user.id)
     end
@@ -278,7 +294,7 @@ defmodule Bank.UsersTest do
 
     test "validates password", %{user: user} do
       {:error, changeset} =
-        Users.update_user_password(user, UsersFixtures.valid_user_password(), %{
+        UsersSettings.update_user_password(user, UsersFixtures.valid_user_password(), %{
           password: "not valid",
           password_confirmation: "another"
         })
@@ -297,7 +313,7 @@ defmodule Bank.UsersTest do
       too_long = String.duplicate("db", 100)
 
       {:error, changeset} =
-        Users.update_user_password(user, UsersFixtures.valid_user_password(), %{
+        UsersSettings.update_user_password(user, UsersFixtures.valid_user_password(), %{
           password: too_long
         })
 
@@ -306,7 +322,7 @@ defmodule Bank.UsersTest do
 
     test "validates current password", %{user: user} do
       {:error, changeset} =
-        Users.update_user_password(user, "invalid", %{
+        UsersSettings.update_user_password(user, "invalid", %{
           password: UsersFixtures.valid_user_password()
         })
 
@@ -315,7 +331,7 @@ defmodule Bank.UsersTest do
 
     test "updates the password", %{user: user} do
       {:ok, user} =
-        Users.update_user_password(user, UsersFixtures.valid_user_password(), %{
+        UsersSettings.update_user_password(user, UsersFixtures.valid_user_password(), %{
           password: @new_valid_password
         })
 
@@ -324,10 +340,10 @@ defmodule Bank.UsersTest do
     end
 
     test "deletes all tokens for the given user", %{user: user} do
-      _ = Users.generate_user_session_token(user)
+      _ = UsersSessions.generate_user_session_token(user)
 
       {:ok, _} =
-        Users.update_user_password(user, UsersFixtures.valid_user_password(), %{
+        UsersSettings.update_user_password(user, UsersFixtures.valid_user_password(), %{
           password: @new_valid_password
         })
 
@@ -341,7 +357,7 @@ defmodule Bank.UsersTest do
     end
 
     test "generates a token", %{user: user} do
-      token = Users.generate_user_session_token(user)
+      token = UsersSessions.generate_user_session_token(user)
       assert user_token = Repo.get_by(UserToken, token: token)
       assert user_token.context == "session"
 
@@ -359,31 +375,31 @@ defmodule Bank.UsersTest do
   describe "get_user_by_session_token/1" do
     setup do
       user = UsersFixtures.fixture()
-      token = Users.generate_user_session_token(user)
+      token = UsersSessions.generate_user_session_token(user)
       %{user: user, token: token}
     end
 
     test "returns user by token", %{user: user, token: token} do
-      assert session_user = Users.get_user_by_session_token(token)
+      assert session_user = UsersSessions.get_user_by_session_token(token)
       assert session_user.id == user.id
     end
 
     test "does not return user for invalid token" do
-      refute Users.get_user_by_session_token("oops")
+      refute UsersSessions.get_user_by_session_token("oops")
     end
 
     test "does not return user for expired token", %{token: token} do
       {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
-      refute Users.get_user_by_session_token(token)
+      refute UsersSessions.get_user_by_session_token(token)
     end
   end
 
   describe "delete_user_session_token/1" do
     test "deletes the token" do
       user = UsersFixtures.fixture()
-      token = Users.generate_user_session_token(user)
-      assert Users.delete_user_session_token(token) == :ok
-      refute Users.get_user_by_session_token(token)
+      token = UsersSessions.generate_user_session_token(user)
+      assert UsersSessions.delete_user_session_token(token) == :ok
+      refute UsersSessions.get_user_by_session_token(token)
     end
   end
 
@@ -395,7 +411,7 @@ defmodule Bank.UsersTest do
     test "sends token through notification", %{user: user} do
       token =
         UsersFixtures.extract_user_token(fn url ->
-          Users.deliver_user_confirmation_instructions(user, url)
+          UsersSessions.deliver_user_confirmation_instructions(user, url)
         end)
 
       {:ok, token} = Base.url_decode64(token, padding: false)
@@ -412,14 +428,14 @@ defmodule Bank.UsersTest do
 
       token =
         UsersFixtures.extract_user_token(fn url ->
-          Users.deliver_user_confirmation_instructions(user, url)
+          UsersSessions.deliver_user_confirmation_instructions(user, url)
         end)
 
       %{user: user, token: token}
     end
 
     test "confirms the email with a valid token", %{user: user, token: token} do
-      assert {:ok, confirmed_user} = Users.confirm_user(token)
+      assert {:ok, confirmed_user} = UsersSessions.confirm_user(token)
       assert confirmed_user.confirmed_at
       assert confirmed_user.confirmed_at != user.confirmed_at
       assert Repo.get!(User, user.id).confirmed_at
@@ -427,14 +443,14 @@ defmodule Bank.UsersTest do
     end
 
     test "does not confirm with invalid token", %{user: user} do
-      assert Users.confirm_user("oops") == :error
+      assert UsersSessions.confirm_user("oops") == :error
       refute Repo.get!(User, user.id).confirmed_at
       assert Repo.get_by(UserToken, user_id: user.id)
     end
 
     test "does not confirm email if token expired", %{user: user, token: token} do
       {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
-      assert Users.confirm_user(token) == :error
+      assert UsersSessions.confirm_user(token) == :error
       refute Repo.get!(User, user.id).confirmed_at
       assert Repo.get_by(UserToken, user_id: user.id)
     end
@@ -523,7 +539,7 @@ defmodule Bank.UsersTest do
     end
 
     test "deletes all tokens for the given user", %{user: user} do
-      _ = Users.generate_user_session_token(user)
+      _ = UsersSessions.generate_user_session_token(user)
       {:ok, _} = Users.reset_user_password(user, %{password: @new_valid_password})
       refute Repo.get_by(UserToken, user_id: user.id)
     end
@@ -538,14 +554,9 @@ defmodule Bank.UsersTest do
   describe "users" do
     @invalid_attrs %{roles: nil}
 
-    test "list_users/0 returns all users" do
+    test "list/0 returns all users" do
       user = UsersFixtures.fixture()
-      assert Users.list_users() == [user]
-    end
-
-    test "get_user!/1 returns the user with given id" do
-      user = UsersFixtures.fixture()
-      assert Users.get_user!(user.id) == user
+      assert Users.list() == [user]
     end
 
     test "update_user/2 with valid data updates the user" do

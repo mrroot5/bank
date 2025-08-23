@@ -4,6 +4,7 @@ defmodule BankWeb.UserConfirmationControllerTest do
   alias Bank.Repo
   alias Bank.Users
   alias Bank.UsersFixtures
+  alias Bank.UsersSessions
 
   setup do
     %{user: UsersFixtures.fixture()}
@@ -81,7 +82,7 @@ defmodule BankWeb.UserConfirmationControllerTest do
     test "confirms the given token once", %{conn: conn, user: user} do
       token =
         UsersFixtures.extract_user_token(fn url ->
-          Users.deliver_user_confirmation_instructions(user, url)
+          UsersSessions.deliver_user_confirmation_instructions(user, url)
         end)
 
       conn = post(conn, ~p"/users/confirm/#{token}")
