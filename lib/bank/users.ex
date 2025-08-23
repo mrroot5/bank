@@ -392,12 +392,12 @@ defmodule Bank.Users do
 
   ## Examples
 
-      iex> list_users()
+      iex> list()
       [%User{}, ...]
 
   """
-  @spec list_users() :: [Ecto.Schema.t()]
-  def list_users, do: Repo.all(User)
+  @spec list() :: [Ecto.Schema.t()]
+  def list, do: Repo.all(User)
 
   @doc """
   Updates a user.
