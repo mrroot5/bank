@@ -5,10 +5,42 @@ defmodule BankWeb.UserLiveTest do
 
   alias BankWeb.ConnCase
 
-  @create_attrs %{roles: [:superuser]}
-  @update_attrs %{roles: [:user]}
+  @superuser_role_attrs %{roles: [:superuser]}
+  @user_role_attrs %{roles: [:user]}
 
-  setup context, do: ConnCase.register_and_log_in_user(context, @create_attrs)
+  setup context, do: ConnCase.register_and_log_in_user(context, @superuser_role_attrs)
+
+  describe "/hq access control" do
+    test "superuser can access /hq/users", %{conn: conn} do
+      {:ok, _index_live, html} = live(conn, ~p"/hq/users")
+      assert html =~ "Listing Users"
+    end
+
+    test "regular user cannot access /hq/users", context do
+      %{conn: conn} = ConnCase.register_and_log_in_user(context, @user_role_attrs)
+
+      expected_error = %Bodyguard.NotAuthorizedError{
+        message: "You are not allowed to be here",
+        status: 403,
+        reason: {:error, :unauthorized}
+      }
+
+      error =
+        assert_raise Bodyguard.NotAuthorizedError, fn ->
+          assert {:error, {:redirect, %{to: _to, flash: _flash}}} = live(conn, ~p"/hq/users")
+        end
+
+      assert expected_error == error
+    end
+
+    test "anonymous user cannot access /hq/users" do
+      conn = Phoenix.ConnTest.build_conn()
+
+      assert {:error, {:redirect, %{to: to, flash: flash}}} = live(conn, ~p"/hq/users")
+      assert to == "/users/log_in"
+      assert flash["error"] =~ "You must log in to access this page."
+    end
+  end
 
   describe "Index" do
     test "lists all users", %{conn: conn} do
@@ -27,7 +59,7 @@ defmodule BankWeb.UserLiveTest do
       assert_patch(index_live, ~p"/hq/users/#{user}/edit")
 
       assert index_live
-             |> form("#user-form", user: @update_attrs)
+             |> form("#user-form", user: @user_role_attrs)
              |> render_submit()
 
       assert_patch(index_live, ~p"/hq/users")
@@ -64,7 +96,7 @@ defmodule BankWeb.UserLiveTest do
       assert_patch(show_live, ~p"/hq/users/#{user}/show/edit")
 
       assert show_live
-             |> form("#user-form", user: @update_attrs)
+             |> form("#user-form", user: @user_role_attrs)
              |> render_submit()
 
       assert_patch(show_live, ~p"/hq/users/#{user}")
