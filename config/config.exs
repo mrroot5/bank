@@ -8,8 +8,10 @@
 import Config
 
 config :bank,
+  default_currency: "EUR",
   ecto_repos: [Bank.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  env: config_env(),
+  generators: [timestamp_type: :utc_datetime_usec]
 
 # Configures the endpoint
 config :bank, BankWeb.Endpoint,
