@@ -158,6 +158,18 @@ defmodule Bank.Users do
   end
 
   @doc """
+  Returns the list of users.
+
+  ## Examples
+
+      iex> list()
+      [%User{}, ...]
+
+  """
+  @spec list() :: [Ecto.Schema.t()]
+  def list, do: Repo.all(User)
+
+  @doc """
   Registers a user.
 
   ## Examples
@@ -202,18 +214,6 @@ defmodule Bank.Users do
       {:error, :user, changeset, _} -> {:error, changeset}
     end
   end
-
-  @doc """
-  Returns the list of users.
-
-  ## Examples
-
-      iex> list()
-      [%User{}, ...]
-
-  """
-  @spec list() :: [Ecto.Schema.t()]
-  def list, do: Repo.all(User)
 
   @doc """
   Updates a user.
