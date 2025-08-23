@@ -171,7 +171,7 @@ defmodule Bank.UsersTest do
       refute Repo.get_by(UserToken, user_id: user.id)
     end
   end
- 
+
   describe "register_user/1" do
     test "requires email and password to be set" do
       {:error, changeset} = Users.register_user(%{})
