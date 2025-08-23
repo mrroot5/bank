@@ -9,6 +9,48 @@ defmodule Bank.UsersTest do
 
   @new_valid_password "New valid passw0rd!"
 
+  describe "change_user_registration/2" do
+    test "returns a changeset" do
+      assert %Ecto.Changeset{} = changeset = Users.change_user_registration(%User{})
+      assert changeset.required == [:roles, :password, :email]
+    end
+
+    test "allows fields to be set" do
+      email = UsersFixtures.unique_user_email()
+      password = UsersFixtures.valid_user_password()
+
+      changeset =
+        Users.change_user_registration(
+          %User{},
+          UsersFixtures.valid_user_attributes(email: email, password: password)
+        )
+
+      assert changeset.valid?
+      assert get_change(changeset, :email) == email
+      assert get_change(changeset, :password) == password
+      assert is_nil(get_change(changeset, :hashed_password))
+    end
+  end
+
+  describe "deliver_user_reset_password_instructions/2" do
+    setup do
+      %{user: UsersFixtures.fixture()}
+    end
+
+    test "sends token through notification", %{user: user} do
+      token =
+        UsersFixtures.extract_user_token(fn url ->
+          Users.deliver_user_reset_password_instructions(user, url)
+        end)
+
+      {:ok, token} = Base.url_decode64(token, padding: false)
+      assert user_token = Repo.get_by(UserToken, token: :crypto.hash(:sha256, token))
+      assert user_token.user_id == user.id
+      assert user_token.sent_to == user.email
+      assert user_token.context == "reset_password"
+    end
+  end
+
   describe "get_user_by_email/1" do
     test "does not return the user if the email does not exist" do
       refute Users.get_user_by_email("unknown@example.com")
@@ -51,6 +93,82 @@ defmodule Bank.UsersTest do
     test "returns the user with the given id" do
       %{id: id} = user = UsersFixtures.fixture()
       assert %User{id: ^id} = Users.get_user!(user.id)
+    end
+  end
+
+  describe "get_user_by_reset_password_token/1" do
+    setup do
+      user = UsersFixtures.fixture()
+
+      token =
+        UsersFixtures.extract_user_token(fn url ->
+          Users.deliver_user_reset_password_instructions(user, url)
+        end)
+
+      %{user: user, token: token}
+    end
+
+    test "returns the user with valid token", %{user: %{id: id}, token: token} do
+      assert %User{id: ^id} = Users.get_user_by_reset_password_token(token)
+      assert Repo.get_by(UserToken, user_id: id)
+    end
+
+    test "does not return the user with invalid token", %{user: user} do
+      refute Users.get_user_by_reset_password_token("oops")
+      assert Repo.get_by(UserToken, user_id: user.id)
+    end
+
+    test "does not return the user if token expired", %{user: user, token: token} do
+      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
+      refute Users.get_user_by_reset_password_token(token)
+      assert Repo.get_by(UserToken, user_id: user.id)
+    end
+  end
+
+  describe "inspect/2 for the User module" do
+    test "does not include password" do
+      refute inspect(%User{password: "123456"}) =~ "password: \"123456\""
+    end
+  end
+
+  describe "reset_user_password/2" do
+    setup do
+      %{user: UsersFixtures.fixture()}
+    end
+
+    test "validates password", %{user: user} do
+      {:error, changeset} =
+        Users.reset_user_password(user, %{
+          password: "not valid",
+          password_confirmation: "another"
+        })
+
+      assert %{
+               password: [
+                 "at least one digit or punctuation character",
+                 "at least one upper case character",
+                 "should be at least 12 character(s)"
+               ],
+               password_confirmation: ["does not match password"]
+             } = errors_on(changeset)
+    end
+
+    test "validates maximum values for password for security", %{user: user} do
+      too_long = String.duplicate("db", 100)
+      {:error, changeset} = Users.reset_user_password(user, %{password: too_long})
+      assert "should be at most 72 character(s)" in errors_on(changeset).password
+    end
+
+    test "updates the password", %{user: user} do
+      {:ok, updated_user} = Users.reset_user_password(user, %{password: @new_valid_password})
+      assert is_nil(updated_user.password)
+      assert Users.get_user_by_email_and_password(user.email, @new_valid_password)
+    end
+
+    test "deletes all tokens for the given user", %{user: user} do
+      _ = UsersSessions.generate_user_session_token(user)
+      {:ok, _} = Users.reset_user_password(user, %{password: @new_valid_password})
+      refute Repo.get_by(UserToken, user_id: user.id)
     end
   end
 
@@ -106,124 +224,6 @@ defmodule Bank.UsersTest do
       assert is_binary(user.hashed_password)
       assert is_nil(user.confirmed_at)
       assert is_nil(user.password)
-    end
-  end
-
-  describe "change_user_registration/2" do
-    test "returns a changeset" do
-      assert %Ecto.Changeset{} = changeset = Users.change_user_registration(%User{})
-      assert changeset.required == [:roles, :password, :email]
-    end
-
-    test "allows fields to be set" do
-      email = UsersFixtures.unique_user_email()
-      password = UsersFixtures.valid_user_password()
-
-      changeset =
-        Users.change_user_registration(
-          %User{},
-          UsersFixtures.valid_user_attributes(email: email, password: password)
-        )
-
-      assert changeset.valid?
-      assert get_change(changeset, :email) == email
-      assert get_change(changeset, :password) == password
-      assert is_nil(get_change(changeset, :hashed_password))
-    end
-  end
-
-  describe "deliver_user_reset_password_instructions/2" do
-    setup do
-      %{user: UsersFixtures.fixture()}
-    end
-
-    test "sends token through notification", %{user: user} do
-      token =
-        UsersFixtures.extract_user_token(fn url ->
-          Users.deliver_user_reset_password_instructions(user, url)
-        end)
-
-      {:ok, token} = Base.url_decode64(token, padding: false)
-      assert user_token = Repo.get_by(UserToken, token: :crypto.hash(:sha256, token))
-      assert user_token.user_id == user.id
-      assert user_token.sent_to == user.email
-      assert user_token.context == "reset_password"
-    end
-  end
-
-  describe "get_user_by_reset_password_token/1" do
-    setup do
-      user = UsersFixtures.fixture()
-
-      token =
-        UsersFixtures.extract_user_token(fn url ->
-          Users.deliver_user_reset_password_instructions(user, url)
-        end)
-
-      %{user: user, token: token}
-    end
-
-    test "returns the user with valid token", %{user: %{id: id}, token: token} do
-      assert %User{id: ^id} = Users.get_user_by_reset_password_token(token)
-      assert Repo.get_by(UserToken, user_id: id)
-    end
-
-    test "does not return the user with invalid token", %{user: user} do
-      refute Users.get_user_by_reset_password_token("oops")
-      assert Repo.get_by(UserToken, user_id: user.id)
-    end
-
-    test "does not return the user if token expired", %{user: user, token: token} do
-      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
-      refute Users.get_user_by_reset_password_token(token)
-      assert Repo.get_by(UserToken, user_id: user.id)
-    end
-  end
-
-  describe "reset_user_password/2" do
-    setup do
-      %{user: UsersFixtures.fixture()}
-    end
-
-    test "validates password", %{user: user} do
-      {:error, changeset} =
-        Users.reset_user_password(user, %{
-          password: "not valid",
-          password_confirmation: "another"
-        })
-
-      assert %{
-               password: [
-                 "at least one digit or punctuation character",
-                 "at least one upper case character",
-                 "should be at least 12 character(s)"
-               ],
-               password_confirmation: ["does not match password"]
-             } = errors_on(changeset)
-    end
-
-    test "validates maximum values for password for security", %{user: user} do
-      too_long = String.duplicate("db", 100)
-      {:error, changeset} = Users.reset_user_password(user, %{password: too_long})
-      assert "should be at most 72 character(s)" in errors_on(changeset).password
-    end
-
-    test "updates the password", %{user: user} do
-      {:ok, updated_user} = Users.reset_user_password(user, %{password: @new_valid_password})
-      assert is_nil(updated_user.password)
-      assert Users.get_user_by_email_and_password(user.email, @new_valid_password)
-    end
-
-    test "deletes all tokens for the given user", %{user: user} do
-      _ = UsersSessions.generate_user_session_token(user)
-      {:ok, _} = Users.reset_user_password(user, %{password: @new_valid_password})
-      refute Repo.get_by(UserToken, user_id: user.id)
-    end
-  end
-
-  describe "inspect/2 for the User module" do
-    test "does not include password" do
-      refute inspect(%User{password: "123456"}) =~ "password: \"123456\""
     end
   end
 
