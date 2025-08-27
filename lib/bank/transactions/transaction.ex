@@ -27,8 +27,9 @@ defmodule Bank.Transactions.Transaction do
 
   schema "transactions" do
     field :amount, :decimal
+    field :concept, :string
     field :currency, :string
-    field :description, :string
+    field :destination, :string
     field :status, Ecto.Enum, values: @transaction_statuses, default: :pending
     field :transaction_type, Ecto.Enum, values: @transaction_types
 
@@ -45,14 +46,14 @@ defmodule Bank.Transactions.Transaction do
     transaction
     |> cast(attrs, [
       :amount,
+      :concept,
       :currency,
-      :description,
       :status,
       :transaction_type,
       :account_id
     ])
     |> cast_embed(:metadata, with: &TransactionMetadata.changeset/2)
-    |> validate_required([:amount, :currency, :description, :transaction_type, :account_id])
+    |> validate_required([:amount, :concept, :currency, :transaction_type, :account_id])
     |> validate_inclusion(:transaction_type, @transaction_types)
     |> validate_inclusion(:status, @transaction_statuses)
     |> validate_length(:currency, is: 3)
