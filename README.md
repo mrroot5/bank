@@ -34,9 +34,10 @@ docker compose up -d
 
 Pleas check [whys](./whys/README.md) folder.
 
-## TODO
+## Future
 
-- [ ] Contexts to manage money movements.
+- [x] Contexts to manage money movements.
+- [ ] Future transactions with Oban (periodic or future transactions).
 - [ ] Views to manage money movements by users.
 - [ ] Reports.
 - [ ] Code quality / security analysis.
