@@ -94,19 +94,19 @@ defmodule Bank.TransactionsTest do
     setup do
       transaction =
         TransactionsFixtures.fixture(%{
-          concept: "Unique concept for get_by"
+          description: "Unique description for get_by"
         })
 
       %{transaction: transaction}
     end
 
     test "returns transaction when found", %{transaction: transaction} do
-      result = Transactions.get_by(concept: "Unique concept for get_by")
+      result = Transactions.get_by(description: "Unique description for get_by")
       assert result.id == transaction.id
     end
 
     test "returns nil when not found" do
-      result = Transactions.get_by(%{concept: "Non-existent concept"})
+      result = Transactions.get_by(%{description: "Non-existent description"})
       assert is_nil(result)
     end
 
@@ -134,14 +134,14 @@ defmodule Bank.TransactionsTest do
         account_id: account.id,
         amount: Decimal.new("100.00"),
         currency: "USD",
-        concept: "Test transaction",
+        description: "Test transaction",
         transaction_type: :deposit
       }
 
       assert {:ok, %Transaction{} = transaction} = Transactions.create(attrs)
       assert transaction.amount == Decimal.new("100.00")
       assert transaction.currency == "USD"
-      assert transaction.concept == "Test transaction"
+      assert transaction.description == "Test transaction"
       assert transaction.transaction_type == :deposit
       assert transaction.status == :pending
     end
@@ -156,7 +156,7 @@ defmodule Bank.TransactionsTest do
         account_id: account.id,
         amount: Decimal.new("100.00"),
         currency: "USD",
-        concept: "Transaction with metadata",
+        description: "Transaction with metadata",
         transaction_type: :deposit,
         metadata: metadata
       }
@@ -170,7 +170,7 @@ defmodule Bank.TransactionsTest do
       attrs = %{
         amount: Decimal.new("-100.00"),
         currency: "INVALID",
-        concept: "",
+        description: "",
         transaction_type: :invalid_type
       }
 
@@ -178,7 +178,7 @@ defmodule Bank.TransactionsTest do
       errors = errors_on(changeset)
 
       expected_errors = %{
-        concept: ["can't be blank"],
+        description: ["can't be blank"],
         currency: ["should be 3 character(s)"],
         amount: ["must be greater than 0.0"],
         account_id: ["can't be blank"],
@@ -322,12 +322,12 @@ defmodule Bank.TransactionsTest do
     end
 
     test "updates transaction successfully", %{transaction: transaction} do
-      new_description = "Updated concept"
+      new_description = "Updated description"
 
       assert {:ok, updated_transaction} =
-               Transactions.update_transaction(transaction, %{concept: new_description})
+               Transactions.update_transaction(transaction, %{description: new_description})
 
-      assert updated_transaction.concept == new_description
+      assert updated_transaction.description == new_description
     end
 
     test "returns error for invalid updates", %{transaction: transaction} do
@@ -371,7 +371,7 @@ defmodule Bank.TransactionsTest do
         amount: Decimal.new("100.00"),
         currency: "USD",
         transaction_type: :deposit,
-        concept: "First transaction"
+        description: "First transaction"
       }
 
       {:ok, _first_transaction} = Transactions.create(attrs)
@@ -381,8 +381,8 @@ defmodule Bank.TransactionsTest do
         amount: Decimal.new("100.00"),
         currency: "USD",
         transaction_type: :deposit,
-        # Different concept (should be ignored)
-        concept: "Different concept"
+        # Different description (should be ignored)
+        description: "Different description"
       }
 
       {:error, changeset} = Transactions.create(duplicate_attrs)
@@ -395,7 +395,7 @@ defmodule Bank.TransactionsTest do
         amount: Decimal.new("100.00"),
         currency: "USD",
         transaction_type: :deposit,
-        concept: "Test transaction"
+        description: "Test transaction"
       }
 
       {:ok, original} = Transactions.create(attrs)
@@ -423,7 +423,7 @@ defmodule Bank.TransactionsTest do
         amount: Decimal.new("100.00"),
         currency: "USD",
         transaction_type: :deposit,
-        concept: "Base transaction"
+        description: "Base transaction"
       }
 
       {:ok, _} = Transactions.create(base_transaction)
@@ -456,16 +456,16 @@ defmodule Bank.TransactionsTest do
         amount: Decimal.new("100.00"),
         currency: "USD",
         transaction_type: :deposit,
-        concept: "Original concept"
+        description: "Original description"
       }
 
       {:ok, _original} = Transactions.create(base_attrs)
 
       # Fields that should NOT affect duplicate detection
       non_identifying_variations = [
-        %{base_attrs | concept: "Completely different concept"},
+        %{base_attrs | description: "Completely different description"},
         Map.put(base_attrs, :metadata, %{origin_external: "stripe"}),
-        Map.delete(base_attrs, :concept)
+        Map.delete(base_attrs, :description)
       ]
 
       Enum.each(non_identifying_variations, fn attrs ->
@@ -530,7 +530,7 @@ defmodule Bank.TransactionsTest do
         amount: Decimal.new("999.00"),
         currency: "USD",
         transaction_type: :deposit,
-        concept: "Performance test"
+        description: "Performance test"
       }
 
       start_time = System.monotonic_time()
@@ -554,7 +554,7 @@ defmodule Bank.TransactionsTest do
         amount: Decimal.new("100.00"),
         currency: "USD",
         transaction_type: :deposit,
-        concept: "Precision test"
+        description: "Precision test"
       }
 
       {:ok, _transaction1} = Transactions.create(attrs1)
@@ -566,7 +566,7 @@ defmodule Bank.TransactionsTest do
         amount: Decimal.new("100.000"),
         currency: "USD",
         transaction_type: :deposit,
-        concept: "Different precision"
+        description: "Different precision"
       }
 
       # Should detect as duplicate (Decimal.equal?/2)
@@ -582,7 +582,7 @@ defmodule Bank.TransactionsTest do
         amount: Decimal.new("100.00"),
         currency: "usd",
         transaction_type: :deposit,
-        concept: "Case test"
+        description: "Case test"
       }
 
       {:ok, _transaction1} = Transactions.create(attrs1)
@@ -592,7 +592,7 @@ defmodule Bank.TransactionsTest do
         amount: Decimal.new("100.00"),
         currency: "USD",
         transaction_type: :deposit,
-        concept: "Case test"
+        description: "Case test"
       }
 
       # Should be allowed (different currency)

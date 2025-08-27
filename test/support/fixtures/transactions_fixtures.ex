@@ -21,7 +21,7 @@ defmodule Bank.TransactionsFixtures do
       account_id: account.id,
       amount: Decimal.new("100.00"),
       currency: "USD",
-      concept: "Test transaction",
+      description: "Test transaction",
       transaction_type: :deposit,
       idempotency_key: "test_key_#{crypto_base64}"
     }
@@ -43,19 +43,19 @@ defmodule Bank.TransactionsFixtures do
         account_id: account.id,
         transaction_type: :deposit,
         amount: Decimal.new("100.00"),
-        concept: "First deposit"
+        description: "First deposit"
       }),
       fixture(%{
         account_id: account.id,
         transaction_type: :withdrawal,
         amount: Decimal.new("50.00"),
-        concept: "First withdrawal"
+        description: "First withdrawal"
       }),
       fixture(%{
         account_id: account.id,
         transaction_type: :transfer,
         amount: Decimal.new("75.00"),
-        concept: "Transfer"
+        description: "Transfer"
       })
     ]
   end
