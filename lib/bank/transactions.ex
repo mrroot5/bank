@@ -8,8 +8,6 @@ defmodule Bank.Transactions do
 
   import Ecto.Query, warn: false
 
-  require Logger
-
   alias Bank.Ecto.Utils, as: EctoUtils
   alias Bank.Ledgers
   alias Bank.QueryComposer
@@ -25,15 +23,12 @@ defmodule Bank.Transactions do
           {:ok, {transaction :: Schema.t(), ledger :: Schema.t(), account :: Schema.t()}}
           | {:error, Changeset.t()}
   def complete(%Transaction{} = transaction, metadata \\ %{}) do
-    transact =
-      Repo.transact(fn ->
-        with {:ok, updated_transaction} <- update_complete(transaction, metadata),
-             {:ok, {ledger, account}} <- create_ledger_entry(transaction) do
-          {:ok, {updated_transaction, ledger, account}}
-        end
-      end)
-
-    maybe_log(transaction.id, "Bank.Transactions.complete", transact)
+    Repo.transact(fn ->
+      with {:ok, updated_transaction} <- update_transaction_status(transaction, metadata),
+           {:ok, {ledger, account}} <- create_ledger_entry(transaction) do
+        {:ok, {updated_transaction, ledger, account}}
+      end
+    end)
   end
 
   @doc """
@@ -51,12 +46,6 @@ defmodule Bank.Transactions do
   """
   @spec fail(Schema.t(), String.t(), pos_integer() | nil, map()) :: EctoUtils.write()
   def fail(%Transaction{} = transaction, reason, error_code \\ nil, metadata \\ %{}) do
-    maybe_log(
-      transaction.id,
-      "Bank.Transactions.fail",
-      {:error, error_code: error_code, reason: reason}
-    )
-
     transaction
     |> Transaction.fail_changeset(reason, error_code, metadata)
     |> Repo.update()
@@ -138,19 +127,7 @@ defmodule Bank.Transactions do
 
   defp infer_ledger_entry_type(_transaction_types), do: :debit
 
-  @spec maybe_log(Ecto.UUID.t(), String.t(), tuple()) :: :ok
-  defp maybe_log(transaction_id, where, error)
-       when is_binary(transaction_id) and is_binary(where) and elem(error, 0) == :error do
-    log_error = Tuple.delete_at(error, 0)
-
-    Logger.warning(
-      "Transaction #{transaction_id} warning thrown on #{where} with error #{inspect(log_error)}"
-    )
-
-    :ok
-  end
-
-  defp update_complete(transaction, metadata) do
+  defp update_transaction_status(transaction, metadata) do
     transaction
     |> Transaction.complete_changeset(metadata)
     |> Repo.update()
