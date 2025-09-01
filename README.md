@@ -38,6 +38,7 @@ Pleas check [whys](./whys/README.md) folder.
 
 - [x] Contexts to manage money movements.
 - [ ] Future transactions with Oban (periodic or future transactions).
+- [ ] UI frameworks?: Fluxon, DaisyUI...
 - [ ] Views to manage money movements by users.
 - [ ] Reports.
 - [ ] Code quality / security analysis.
