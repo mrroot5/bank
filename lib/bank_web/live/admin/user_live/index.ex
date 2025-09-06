@@ -48,12 +48,6 @@ defmodule BankWeb.Headquarters.UserLive.Index do
     {:noreply, paginate_users(socket, socket.assigns.last_id)}
   end
 
-  # prev-page not implemented for after_id keyset (forward only)
-  @impl LiveView
-  def handle_event("prev-page", _, socket) do
-    {:noreply, socket}
-  end
-
   @impl LiveView
   def handle_event("delete", %{"id" => id}, socket) do
     user = Users.get_user!(id)

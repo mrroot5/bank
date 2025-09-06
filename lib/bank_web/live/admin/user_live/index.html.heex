@@ -9,11 +9,6 @@
 
 <.table
   id="users"
-  phx-update="stream"
-  class={[
-    if(@end_of_timeline?, do: "pb-10", else: "pb-[calc(200vh)]"),
-    "pt-10"
-  ]}
   rows={@streams.users}
   row_click={fn {_id, user} -> JS.navigate(~p"/hq/users/#{user}") end}
 >
