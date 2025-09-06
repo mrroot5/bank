@@ -49,7 +49,7 @@ defmodule Bank.Oban.Workers.Transactions do
           "while doing: #{inspect(operation)} with value: #{inspect(value)} and changes: #{inspect(changes)}"
 
         Logger.warning("Oban perform transaction #{id} failed #{failed_message}")
-/
+
         {:snooze, 60}
 
       _ ->
