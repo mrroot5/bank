@@ -6,6 +6,7 @@ defmodule Bank.Users do
   import Ecto.Query, warn: false
 
   alias Bank.Ecto.Utils, as: EctoUtils
+  alias Bank.QueryComposer
   alias Bank.Repo
   alias Bank.Users.User
   alias Bank.Users.UserNotifier
@@ -155,6 +156,16 @@ defmodule Bank.Users do
     else
       _ -> nil
     end
+  end
+
+  @doc """
+  Returns a paginated list of users.
+  """
+  @spec list_paginated(keyword()) :: [Ecto.Schema.t()]
+  def list_paginated(opts \\ []) do
+    User
+    |> QueryComposer.list_paginated(opts)
+    |> Repo.all()
   end
 
   @doc """
