@@ -7,10 +7,10 @@ defmodule Bank.QueryComposer do
 
   alias Ecto.Query
 
+  @list_paginated_limit 20
+
   @type filters_where :: [{operator :: String.t(), field_name :: atom(), field_value :: term()}]
   @type filters_others :: [{operator :: String.t(), field_value :: term()}]
-
-  @list_paginated_limit 20
 
   @doc """
   Filters ecto query
@@ -55,19 +55,17 @@ defmodule Bank.QueryComposer do
 
   https://hexdocs.pm/phoenix_live_view/bindings.html#scroll-events-and-infinite-pagination
   """
-  @spec list_paginated(keyword()) :: [Ecto.Schema.t()]
+  @spec list_paginated(Ecto.Queryable.t(), keyword()) :: Query.t()
   def list_paginated(schema, opts \\ []) do
     limit = Keyword.get(opts, :limit, @list_paginated_limit)
-    after_id = Keyword.get(opts, :after_id)
+    after_id = Keyword.get(opts, :after_id, false)
 
     base_query = from(u in schema)
 
-    cond do
-      after_id ->
-        from u in base_query, where: u.id > ^after_id, order_by: [asc: u.id], limit: ^limit
-
-      true ->
-        from u in base_query, order_by: [asc: u.id], limit: ^limit
+    if after_id do
+      from u in base_query, where: u.id > ^after_id, order_by: [asc: u.id], limit: ^limit
+    else
+      from u in base_query, order_by: [asc: u.id], limit: ^limit
     end
   end
 

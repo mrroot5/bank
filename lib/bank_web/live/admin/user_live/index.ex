@@ -5,7 +5,7 @@ defmodule BankWeb.Headquarters.UserLive.Index do
   alias Phoenix.LiveView
   alias Phoenix.LiveView.Socket
 
-  @per_page 10
+  @per_page 20
 
   @impl LiveView
   def mount(_params, _session, socket) do
@@ -15,32 +15,10 @@ defmodule BankWeb.Headquarters.UserLive.Index do
       |> assign(:last_id, nil)
 
     if connected?(socket) do
-      {:ok, paginate_users(socket, nil)}
+      {:ok, paginate_users(socket)}
     else
       {:ok, stream(socket, :users, [])}
     end
-  end
-
-  defp paginate_users(socket, after_id) do
-    users =
-      if after_id do
-        Users.list_paginated(after_id: after_id, limit: @per_page)
-      else
-        Users.list_paginated(limit: @per_page)
-      end
-
-    end_of_timeline = length(users) < @per_page
-
-    last_id =
-      case List.last(users) do
-        nil -> socket.assigns[:last_id]
-        user -> user.id
-      end
-
-    socket
-    |> assign(:end_of_timeline?, end_of_timeline)
-    |> assign(:last_id, last_id)
-    |> stream(:users, users, at: -1)
   end
 
   @impl LiveView
@@ -77,5 +55,28 @@ defmodule BankWeb.Headquarters.UserLive.Index do
     socket
     |> assign(:page_title, "Listing Users")
     |> assign(:user, nil)
+  end
+
+  @spec paginate_users(Socket.t(), String.t() | false) :: Socket.t()
+  defp paginate_users(socket, after_id \\ false) do
+    users =
+      if after_id do
+        Users.list_paginated(after_id: after_id, limit: @per_page)
+      else
+        Users.list_paginated(limit: @per_page)
+      end
+
+    end_of_timeline = length(users) < @per_page
+
+    last_id =
+      case List.last(users) do
+        nil -> socket.assigns[:last_id]
+        user -> user.id
+      end
+
+    socket
+    |> assign(:end_of_timeline?, end_of_timeline)
+    |> assign(:last_id, last_id)
+    |> stream(:users, users, at: -1)
   end
 end
