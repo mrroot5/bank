@@ -2,8 +2,18 @@
   Listing Users
 </.header>
 
+<div
+  id="user-scroll"
+  phx-viewport-bottom={!@end_of_timeline? && JS.push("next-page", page_loading: true)}
+>
+
 <.table
   id="users"
+  phx-update="stream"
+  class={[
+    if(@end_of_timeline?, do: "pb-10", else: "pb-[calc(200vh)]"),
+    "pt-10"
+  ]}
   rows={@streams.users}
   row_click={fn {_id, user} -> JS.navigate(~p"/hq/users/#{user}") end}
 >
@@ -23,6 +33,11 @@
     </.link>
   </:action>
 </.table>
+</div>
+
+<div :if={@end_of_timeline?} class="mt-5 text-center italic">
+  No more users to load
+</div>
 
 <.modal
   :if={@live_action in [:new, :edit]}
@@ -30,6 +45,7 @@
   show
   on_cancel={JS.patch(~p"/hq/users")}
 >
+
   <.live_component
     module={BankWeb.Headquarters.UserLive.FormComponent}
     id={@user.id || :new}
