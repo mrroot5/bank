@@ -10,6 +10,8 @@ defmodule Bank.QueryComposer do
   @type filters_where :: [{operator :: String.t(), field_name :: atom(), field_value :: term()}]
   @type filters_others :: [{operator :: String.t(), field_value :: term()}]
 
+  @list_paginated_limit 20
+
   @doc """
   Filters ecto query
 
@@ -37,6 +39,37 @@ defmodule Bank.QueryComposer do
   @spec filter_by_date_range(Query.t(), keyword()) :: Query.t()
   def filter_by_date_range(query, opts) when is_list(opts),
     do: do_filter_by_date_range(query, opts[:from_date], opts[:to_date], opts[:date_field])
+
+  @doc """
+  Returns a paginated list of users.
+
+  ## Options
+  * :offset - offset for pagination
+  * :limit - limit for pagination
+
+  ## Examples
+      iex> list_paginated(offset: 0, limit: 20)
+      [%User{}, ...]
+
+  ## Docs
+
+  https://hexdocs.pm/phoenix_live_view/bindings.html#scroll-events-and-infinite-pagination
+  """
+  @spec list_paginated(keyword()) :: [Ecto.Schema.t()]
+  def list_paginated(schema, opts \\ []) do
+    limit = Keyword.get(opts, :limit, @list_paginated_limit)
+    after_id = Keyword.get(opts, :after_id)
+
+    base_query = from(u in schema)
+
+    cond do
+      after_id ->
+        from u in base_query, where: u.id > ^after_id, order_by: [asc: u.id], limit: ^limit
+
+      true ->
+        from u in base_query, order_by: [asc: u.id], limit: ^limit
+    end
+  end
 
   @spec maybe_preload(Ecto.Queryable.t(), [atom()] | nil) :: Query.t()
   def maybe_preload(query, nil), do: query
