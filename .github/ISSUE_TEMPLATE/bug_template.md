@@ -1,8 +1,8 @@
 ---
-name: Issue Report
+name: Bug Report
 about: Report a bug
 title: 'Bug: Short description'
-labels: bug
+labels: bug, elixir
 assignees: mrroot5
 
 ---
