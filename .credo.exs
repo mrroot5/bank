@@ -34,7 +34,13 @@
           "apps/*/test/",
           "apps/*/web/"
         ],
-        excluded: [~r"/_build/", ~r"/deps/", ~r"/node_modules/"]
+        excluded: [
+          ~r"/_build/",
+          ~r"/deps/",
+          ~r"/node_modules/",
+          "priv/repo/seeds.exs",
+          ~r"lib/bank/seeds"
+        ]
       },
       #
       # Load and configure plugins here:
