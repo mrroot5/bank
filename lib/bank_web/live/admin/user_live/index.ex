@@ -5,9 +5,25 @@ defmodule BankWeb.Headquarters.UserLive.Index do
   alias Phoenix.LiveView
   alias Phoenix.LiveView.Socket
 
+  @per_page 20
+
   @impl LiveView
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :users, Users.list())}
+    socket =
+      socket
+      |> assign(:end_of_timeline?, false)
+      |> assign(:last_inserted_at, nil)
+
+    if connected?(socket) do
+      {:ok, paginate_users(socket)}
+    else
+      {:ok, stream(socket, :users, [])}
+    end
+  end
+
+  @impl LiveView
+  def handle_event("next-page", _, socket) do
+    {:noreply, paginate_users(socket, socket.assigns.last_inserted_at)}
   end
 
   @impl LiveView
@@ -39,5 +55,28 @@ defmodule BankWeb.Headquarters.UserLive.Index do
     socket
     |> assign(:page_title, "Listing Users")
     |> assign(:user, nil)
+  end
+
+  @spec paginate_users(Socket.t(), NaiveDateTime.t() | false) :: Socket.t()
+  defp paginate_users(socket, after_inserted_at \\ false) do
+    users =
+      if after_inserted_at do
+        Users.list_paginated(after_inserted_at: after_inserted_at, limit: @per_page)
+      else
+        Users.list_paginated(limit: @per_page)
+      end
+
+    end_of_timeline = length(users) < @per_page
+
+    last_inserted_at =
+      case List.last(users) do
+        nil -> socket.assigns[:last_inserted_at]
+        user -> user.inserted_at
+      end
+
+    socket
+    |> assign(:end_of_timeline?, end_of_timeline)
+    |> assign(:last_inserted_at, last_inserted_at)
+    |> stream(:users, users, at: -1)
   end
 end

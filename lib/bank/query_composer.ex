@@ -7,6 +7,8 @@ defmodule Bank.QueryComposer do
 
   alias Ecto.Query
 
+  @list_paginated_limit 20
+
   @type filters_where :: [{operator :: String.t(), field_name :: atom(), field_value :: term()}]
   @type filters_others :: [{operator :: String.t(), field_value :: term()}]
 
@@ -37,6 +39,36 @@ defmodule Bank.QueryComposer do
   @spec filter_by_date_range(Query.t(), keyword()) :: Query.t()
   def filter_by_date_range(query, opts) when is_list(opts),
     do: do_filter_by_date_range(query, opts[:from_date], opts[:to_date], opts[:date_field])
+
+  @doc """
+  Returns a paginated list of records using cursor-based pagination on the `inserted_at` field.
+
+  ## Options
+  * :after_inserted_at - paginates results after this `inserted_at` timestamp (cursor)
+  * :limit - maximum number of records to return (default: #{@list_paginated_limit})
+
+  ## Examples
+      iex> list_paginated(after_inserted_at: ~N[2023-01-01 00:00:00], limit: 20)
+      [%User{}, ...]
+
+  See: https://hexdocs.pm/phoenix_live_view/bindings.html#scroll-events-and-infinite-pagination
+  """
+  @spec list_paginated(Ecto.Queryable.t(), keyword()) :: Query.t()
+  def list_paginated(schema, opts \\ []) do
+    limit = Keyword.get(opts, :limit, @list_paginated_limit)
+    after_inserted_at = Keyword.get(opts, :after_inserted_at, false)
+
+    base_query = from(u in schema)
+
+    if after_inserted_at do
+      from u in base_query,
+        where: u.inserted_at > ^after_inserted_at,
+        order_by: [asc: u.inserted_at],
+        limit: ^limit
+    else
+      from u in base_query, order_by: [asc: u.inserted_at], limit: ^limit
+    end
+  end
 
   @spec maybe_preload(Ecto.Queryable.t(), [atom()] | nil) :: Query.t()
   def maybe_preload(query, nil), do: query

@@ -2,27 +2,36 @@
   Listing Users
 </.header>
 
-<.table
-  id="users"
-  rows={@streams.users}
-  row_click={fn {_id, user} -> JS.navigate(~p"/hq/users/#{user}") end}
+<div
+  id="user-scroll"
+  phx-viewport-bottom={!@end_of_timeline? && JS.push("next-page", page_loading: true)}
 >
-  <:col :let={{_id, user}} label="Email">{user.email}</:col>
-  <:action :let={{_id, user}}>
-    <div class="sr-only">
-      <.link navigate={~p"/hq/users/#{user}"}>Show</.link>
-    </div>
-    <.link patch={~p"/hq/users/#{user}/edit"}>Edit</.link>
-  </:action>
-  <:action :let={{id, user}}>
-    <.link
-      phx-click={JS.push("delete", value: %{id: user.id}) |> hide("##{id}")}
-      data-confirm="Are you sure?"
-    >
-      Delete
-    </.link>
-  </:action>
-</.table>
+  <.table
+    id="users"
+    rows={@streams.users}
+    row_click={fn {_id, user} -> JS.navigate(~p"/hq/users/#{user}") end}
+  >
+    <:col :let={{_id, user}} label="Email">{user.email}</:col>
+    <:action :let={{_id, user}}>
+      <div class="sr-only">
+        <.link navigate={~p"/hq/users/#{user}"}>Show</.link>
+      </div>
+      <.link patch={~p"/hq/users/#{user}/edit"}>Edit</.link>
+    </:action>
+    <:action :let={{id, user}}>
+      <.link
+        phx-click={JS.push("delete", value: %{id: user.id}) |> hide("##{id}")}
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
+</div>
+
+<div :if={@end_of_timeline?} class="mt-5 text-center italic">
+  No more users to load
+</div>
 
 <.modal
   :if={@live_action in [:new, :edit]}
