@@ -41,31 +41,32 @@ defmodule Bank.QueryComposer do
     do: do_filter_by_date_range(query, opts[:from_date], opts[:to_date], opts[:date_field])
 
   @doc """
-  Returns a paginated list of users.
+  Returns a paginated list of records using cursor-based pagination on the `inserted_at` field.
 
   ## Options
-  * :offset - offset for pagination
-  * :limit - limit for pagination
+  * :after_inserted_at - paginates results after this `inserted_at` timestamp (cursor)
+  * :limit - maximum number of records to return (default: #{@list_paginated_limit})
 
   ## Examples
-      iex> list_paginated(offset: 0, limit: 20)
+      iex> list_paginated(after_inserted_at: ~N[2023-01-01 00:00:00], limit: 20)
       [%User{}, ...]
 
-  ## Docs
-
-  https://hexdocs.pm/phoenix_live_view/bindings.html#scroll-events-and-infinite-pagination
+  See: https://hexdocs.pm/phoenix_live_view/bindings.html#scroll-events-and-infinite-pagination
   """
   @spec list_paginated(Ecto.Queryable.t(), keyword()) :: Query.t()
   def list_paginated(schema, opts \\ []) do
     limit = Keyword.get(opts, :limit, @list_paginated_limit)
-    after_id = Keyword.get(opts, :after_id, false)
+    after_inserted_at = Keyword.get(opts, :after_inserted_at, false)
 
     base_query = from(u in schema)
 
-    if after_id do
-      from u in base_query, where: u.id > ^after_id, order_by: [asc: u.id], limit: ^limit
+    if after_inserted_at do
+      from u in base_query,
+        where: u.inserted_at > ^after_inserted_at,
+        order_by: [asc: u.inserted_at],
+        limit: ^limit
     else
-      from u in base_query, order_by: [asc: u.id], limit: ^limit
+      from u in base_query, order_by: [asc: u.inserted_at], limit: ^limit
     end
   end
 
