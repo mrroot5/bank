@@ -62,7 +62,7 @@ defmodule BankWeb.UserAuth do
   @spec log_out_user(Conn.t()) :: Conn.t()
   def log_out_user(conn) do
     user_token = get_session(conn, :user_token)
-    user_token && UsersSessions.delete_user_session_token(user_token)
+    user_token && UsersSessions.delete_session_token(user_token)
 
     if live_socket_id = get_session(conn, :live_socket_id) do
       BankWeb.Endpoint.broadcast(live_socket_id, "disconnect", %{})

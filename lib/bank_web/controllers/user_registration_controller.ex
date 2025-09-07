@@ -9,7 +9,7 @@ defmodule BankWeb.UserRegistrationController do
 
   @spec new(Conn.t(), map()) :: Conn.t()
   def new(conn, _params) do
-    changeset = Users.change_user_registration(%User{})
+    changeset = Users.change_registration(%User{})
     render(conn, :new, changeset: changeset)
   end
 

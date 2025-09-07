@@ -9,9 +9,9 @@ defmodule Bank.UsersTest do
 
   @new_valid_password "New valid passw0rd!"
 
-  describe "change_user_registration/2" do
+  describe "change_registration/2" do
     test "returns a changeset" do
-      assert %Ecto.Changeset{} = changeset = Users.change_user_registration(%User{})
+      assert %Ecto.Changeset{} = changeset = Users.change_registration(%User{})
       assert changeset.required == [:roles, :password, :email]
     end
 
@@ -20,7 +20,7 @@ defmodule Bank.UsersTest do
       password = UsersFixtures.valid_user_password()
 
       changeset =
-        Users.change_user_registration(
+        Users.change_registration(
           %User{},
           UsersFixtures.valid_user_attributes(email: email, password: password)
         )
@@ -32,7 +32,7 @@ defmodule Bank.UsersTest do
     end
   end
 
-  describe "deliver_user_reset_password_instructions/2" do
+  describe "deliver_reset_password_instructions/2" do
     setup do
       %{user: UsersFixtures.fixture()}
     end
@@ -40,7 +40,7 @@ defmodule Bank.UsersTest do
     test "sends token through notification", %{user: user} do
       token =
         UsersFixtures.extract_user_token(fn url ->
-          Users.deliver_user_reset_password_instructions(user, url)
+          Users.deliver_reset_password_instructions(user, url)
         end)
 
       {:ok, token} = Base.url_decode64(token, padding: false)
@@ -51,76 +51,76 @@ defmodule Bank.UsersTest do
     end
   end
 
-  describe "get_user_by_email/1" do
+  describe "get_by_email/1" do
     test "does not return the user if the email does not exist" do
-      refute Users.get_user_by_email("unknown@example.com")
+      refute Users.get_by_email("unknown@example.com")
     end
 
     test "returns the user if the email exists" do
       %{id: id} = user = UsersFixtures.fixture()
-      assert %User{id: ^id} = Users.get_user_by_email(user.email)
+      assert %User{id: ^id} = Users.get_by_email(user.email)
     end
   end
 
-  describe "get_user_by_email_and_password/2" do
+  describe "get_by_email_and_password/2" do
     test "does not return the user if the email does not exist" do
-      refute Users.get_user_by_email_and_password("unknown@example.com", "hello world!")
+      refute Users.get_by_email_and_password("unknown@example.com", "hello world!")
     end
 
     test "does not return the user if the password is not valid" do
       user = UsersFixtures.fixture()
-      refute Users.get_user_by_email_and_password(user.email, "invalid")
+      refute Users.get_by_email_and_password(user.email, "invalid")
     end
 
     test "returns the user if the email and password are valid" do
       %{id: id} = user = UsersFixtures.fixture()
 
       assert %User{id: ^id} =
-               Users.get_user_by_email_and_password(
+               Users.get_by_email_and_password(
                  user.email,
                  UsersFixtures.valid_user_password()
                )
     end
   end
 
-  describe "get_user!/1" do
+  describe "get!/1" do
     test "raises if id is invalid" do
       assert_raise Ecto.NoResultsError, fn ->
-        Users.get_user!(Ecto.UUID.generate())
+        Users.get!(Ecto.UUID.generate())
       end
     end
 
     test "returns the user with the given id" do
       %{id: id} = user = UsersFixtures.fixture()
-      assert %User{id: ^id} = Users.get_user!(user.id)
+      assert %User{id: ^id} = Users.get!(user.id)
     end
   end
 
-  describe "get_user_by_reset_password_token/1" do
+  describe "get_by_reset_password_token/1" do
     setup do
       user = UsersFixtures.fixture()
 
       token =
         UsersFixtures.extract_user_token(fn url ->
-          Users.deliver_user_reset_password_instructions(user, url)
+          Users.deliver_reset_password_instructions(user, url)
         end)
 
       %{user: user, token: token}
     end
 
     test "returns the user with valid token", %{user: %{id: id}, token: token} do
-      assert %User{id: ^id} = Users.get_user_by_reset_password_token(token)
+      assert %User{id: ^id} = Users.get_by_reset_password_token(token)
       assert Repo.get_by(UserToken, user_id: id)
     end
 
     test "does not return the user with invalid token", %{user: user} do
-      refute Users.get_user_by_reset_password_token("oops")
+      refute Users.get_by_reset_password_token("oops")
       assert Repo.get_by(UserToken, user_id: user.id)
     end
 
     test "does not return the user if token expired", %{user: user, token: token} do
       {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
-      refute Users.get_user_by_reset_password_token(token)
+      refute Users.get_by_reset_password_token(token)
       assert Repo.get_by(UserToken, user_id: user.id)
     end
   end
@@ -131,14 +131,14 @@ defmodule Bank.UsersTest do
     end
   end
 
-  describe "reset_user_password/2" do
+  describe "reset_password/2" do
     setup do
       %{user: UsersFixtures.fixture()}
     end
 
     test "validates password", %{user: user} do
       {:error, changeset} =
-        Users.reset_user_password(user, %{
+        Users.reset_password(user, %{
           password: "not valid",
           password_confirmation: "another"
         })
@@ -155,19 +155,19 @@ defmodule Bank.UsersTest do
 
     test "validates maximum values for password for security", %{user: user} do
       too_long = String.duplicate("db", 100)
-      {:error, changeset} = Users.reset_user_password(user, %{password: too_long})
+      {:error, changeset} = Users.reset_password(user, %{password: too_long})
       assert "should be at most 72 character(s)" in errors_on(changeset).password
     end
 
     test "updates the password", %{user: user} do
-      {:ok, updated_user} = Users.reset_user_password(user, %{password: @new_valid_password})
+      {:ok, updated_user} = Users.reset_password(user, %{password: @new_valid_password})
       assert is_nil(updated_user.password)
-      assert Users.get_user_by_email_and_password(user.email, @new_valid_password)
+      assert Users.get_by_email_and_password(user.email, @new_valid_password)
     end
 
     test "deletes all tokens for the given user", %{user: user} do
       _ = UsersSessions.generate_user_session_token(user)
-      {:ok, _} = Users.reset_user_password(user, %{password: @new_valid_password})
+      {:ok, _} = Users.reset_password(user, %{password: @new_valid_password})
       refute Repo.get_by(UserToken, user_id: user.id)
     end
   end
@@ -246,13 +246,13 @@ defmodule Bank.UsersTest do
     test "update_user/2 with invalid data returns error changeset" do
       user = UsersFixtures.fixture()
       assert {:error, %Ecto.Changeset{}} = Users.update_user(user, @invalid_attrs)
-      assert user == Users.get_user!(user.id)
+      assert user == Users.get!(user.id)
     end
 
-    test "delete_user/1 deletes the user" do
+    test "delete/1 deletes the user" do
       user = UsersFixtures.fixture()
-      assert {:ok, %User{}} = Users.delete_user(user)
-      assert_raise Ecto.NoResultsError, fn -> Users.get_user!(user.id) end
+      assert {:ok, %User{}} = Users.delete(user)
+      assert_raise Ecto.NoResultsError, fn -> Users.get!(user.id) end
     end
 
     test "change_user/1 returns a user changeset" do

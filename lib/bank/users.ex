@@ -28,12 +28,12 @@ defmodule Bank.Users do
 
   ## Examples
 
-      iex> change_user_password(user)
+      iex> change_password(user)
       %Ecto.Changeset{data: %User{}}
 
   """
-  @spec change_user_password(Ecto.Schema.t(), map()) :: Ecto.Changeset.t()
-  def change_user_password(user, attrs \\ %{}) do
+  @spec change_password(Ecto.Schema.t(), map()) :: Ecto.Changeset.t()
+  def change_password(user, attrs \\ %{}) do
     User.password_changeset(user, attrs, hash_password: false)
   end
 
@@ -42,12 +42,12 @@ defmodule Bank.Users do
 
   ## Examples
 
-      iex> change_user_registration(user)
+      iex> change_registration(user)
       %Ecto.Changeset{data: %User{}}
 
   """
-  @spec change_user_registration(Ecto.Schema.t(), map()) :: Ecto.Changeset.t()
-  def change_user_registration(%User{} = user, attrs \\ %{}) do
+  @spec change_registration(Ecto.Schema.t(), map()) :: Ecto.Changeset.t()
+  def change_registration(%User{} = user, attrs \\ %{}) do
     User.registration_changeset(user, attrs, hash_password: false, validate_email: false)
   end
 
@@ -56,27 +56,27 @@ defmodule Bank.Users do
 
   ## Examples
 
-      iex> delete_user(user)
+      iex> delete(user)
       {:ok, %User{}}
 
-      iex> delete_user(user)
+      iex> delete(user)
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec delete_user(Ecto.Schema.t()) :: EctoUtils.write()
-  def delete_user(%User{} = user), do: Repo.delete(user)
+  @spec delete(Ecto.Schema.t()) :: EctoUtils.write()
+  def delete(%User{} = user), do: Repo.delete(user)
 
   @doc ~S"""
   Delivers the reset password email to the given user.
 
   ## Examples
 
-      iex> deliver_user_reset_password_instructions(user, &url(~p"/users/reset_password/#{&1}"))
+      iex> deliver_reset_password_instructions(user, &url(~p"/users/reset_password/#{&1}"))
       {:ok, %{to: ..., body: ...}}
 
   """
-  @spec deliver_user_reset_password_instructions(Ecto.Schema.t(), fun()) :: UserNotifier.t()
-  def deliver_user_reset_password_instructions(%User{} = user, reset_password_url_fun)
+  @spec deliver_reset_password_instructions(Ecto.Schema.t(), fun()) :: UserNotifier.t()
+  def deliver_reset_password_instructions(%User{} = user, reset_password_url_fun)
       when is_function(reset_password_url_fun, 1) do
     {encoded_token, user_token} = UserToken.build_email_token(user, "reset_password")
     Repo.insert!(user_token)
@@ -90,30 +90,30 @@ defmodule Bank.Users do
 
   ## Examples
 
-      iex> get_user!(123)
+      iex> get!(123)
       %User{}
 
-      iex> get_user!(456)
+      iex> get!(456)
       ** (Ecto.NoResultsError)
 
   """
-  @spec get_user!(pos_integer()) :: Ecto.Schema.t() | term()
-  def get_user!(id), do: Repo.get!(User, id)
+  @spec get!(pos_integer()) :: Ecto.Schema.t() | term()
+  def get!(id), do: Repo.get!(User, id)
 
   @doc """
   Gets a user by email.
 
   ## Examples
 
-      iex> get_user_by_email("foo@example.com")
+      iex> get_by_email("foo@example.com")
       %User{}
 
-      iex> get_user_by_email("unknown@example.com")
+      iex> get_by_email("unknown@example.com")
       nil
 
   """
-  @spec get_user_by_email(binary()) :: EctoUtils.get()
-  def get_user_by_email(email) when is_binary(email) do
+  @spec get_by_email(binary()) :: EctoUtils.get()
+  def get_by_email(email) when is_binary(email) do
     Repo.get_by(User, email: email)
   end
 
@@ -122,15 +122,15 @@ defmodule Bank.Users do
 
   ## Examples
 
-      iex> get_user_by_email_and_password("foo@example.com", "correct_password")
+      iex> get_by_email_and_password("foo@example.com", "correct_password")
       %User{}
 
-      iex> get_user_by_email_and_password("foo@example.com", "invalid_password")
+      iex> get_by_email_and_password("foo@example.com", "invalid_password")
       nil
 
   """
-  @spec get_user_by_email_and_password(binary(), binary()) :: EctoUtils.get()
-  def get_user_by_email_and_password(email, password)
+  @spec get_by_email_and_password(binary(), binary()) :: EctoUtils.get()
+  def get_by_email_and_password(email, password)
       when is_binary(email) and is_binary(password) do
     user = Repo.get_by(User, email: email)
     if User.valid_password?(user, password), do: user
@@ -141,15 +141,15 @@ defmodule Bank.Users do
 
   ## Examples
 
-      iex> get_user_by_reset_password_token("validtoken")
+      iex> get_by_reset_password_token("validtoken")
       %User{}
 
-      iex> get_user_by_reset_password_token("invalidtoken")
+      iex> get_by_reset_password_token("invalidtoken")
       nil
 
   """
-  @spec get_user_by_reset_password_token(binary()) :: Ecto.Schema.t() | nil
-  def get_user_by_reset_password_token(token) do
+  @spec get_by_reset_password_token(binary()) :: Ecto.Schema.t() | nil
+  def get_by_reset_password_token(token) do
     with {:ok, query} <- UserToken.verify_email_token_query(token, "reset_password"),
          %User{} = user <- Repo.one(query) do
       user
@@ -204,16 +204,16 @@ defmodule Bank.Users do
 
   ## Examples
 
-      iex> reset_user_password(user, %{password: "new long password", password_confirmation: "new long password"})
+      iex> reset_password(user, %{password: "new long password", password_confirmation: "new long password"})
       {:ok, %User{}}
 
-      iex> reset_user_password(user, %{password: "valid", password_confirmation: "not the same"})
+      iex> reset_password(user, %{password: "valid", password_confirmation: "not the same"})
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec reset_user_password(Ecto.Schema.t(), map()) ::
-          {:ok | :error, Ecto.Schema.t() | Ecto.Changeset.t()}
-  def reset_user_password(user, attrs) do
+  @spec reset_password(Ecto.Schema.t(), map()) ::
+          {:ok, Ecto.Schema.t()} | {:error, Ecto.Changeset.t()}
+  def reset_password(user, attrs) do
     ecto_multi =
       Ecto.Multi.new()
       |> Ecto.Multi.update(:user, User.password_changeset(user, attrs))

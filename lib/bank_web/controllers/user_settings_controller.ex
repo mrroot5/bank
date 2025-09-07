@@ -76,6 +76,6 @@ defmodule BankWeb.UserSettingsController do
 
     conn
     |> assign(:email_changeset, UsersSettings.change_user_email(user))
-    |> assign(:password_changeset, Users.change_user_password(user))
+    |> assign(:password_changeset, Users.change_password(user))
   end
 end
