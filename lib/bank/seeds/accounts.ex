@@ -88,7 +88,7 @@ defmodule Bank.Seeds.Accounts do
   end
 
   defp create_admin_all_type_accounts do
-    admin = Users.get_by_email("admin@admin.com")
+    admin = Users.get_user_by_email("admin@admin.com")
 
     Enum.each([:checking, :savings, :business, :wholesale], &create_admin_account(&1, admin))
   end
