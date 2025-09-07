@@ -1,17 +1,11 @@
 ---
 name: Issue Report
-about: Report a bug, request a feature, or suggest an improvement
-title: "[ISSUE TYPE] Short description"
+about: Report a bug
+title: 'Bug: Short description'
 labels: bug
-assignees: ''
+assignees: mrroot5
+
 ---
-
-## Issue Type
-
-- [ ] Bug
-- [ ] Feature Request
-- [ ] Improvement
-- [ ] Other
 
 ## Description
 
