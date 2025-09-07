@@ -159,16 +159,6 @@ defmodule Bank.Users do
   end
 
   @doc """
-  Returns a paginated list of users.
-  """
-  @spec list_paginated(keyword()) :: [Ecto.Schema.t()]
-  def list_paginated(opts \\ []) do
-    User
-    |> QueryComposer.list_paginated(opts)
-    |> Repo.all()
-  end
-
-  @doc """
   Returns the list of users.
 
   ## Examples
@@ -179,6 +169,16 @@ defmodule Bank.Users do
   """
   @spec list() :: [Ecto.Schema.t()]
   def list, do: Repo.all(User)
+
+  @doc """
+  Returns a paginated list of users.
+  """
+  @spec list_paginated(keyword()) :: [Ecto.Schema.t()]
+  def list_paginated(opts \\ []) do
+    User
+    |> QueryComposer.list_paginated(opts)
+    |> Repo.all()
+  end
 
   @doc """
   Registers a user.
