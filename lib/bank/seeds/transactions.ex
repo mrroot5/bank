@@ -59,7 +59,7 @@ defmodule Bank.Seeds.Transactions do
     account = Enum.at(accounts, rem(n - 1, length(accounts)))
     type = Enum.random(@transaction_types)
     amount = Decimal.new(Enum.random(1..1000))
-    description = "Seeded transaction \#{n}"
+    description = "Seeded transaction #{n}"
 
     %{
       amount: amount,
