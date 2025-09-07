@@ -31,7 +31,7 @@ defmodule BankWeb.UserSessionController do
   # defp create(conn, %{"user" => user_params}, info) do
   #   %{"email" => email, "password" => password} = user_params
 
-  #   if user = Users.get_user_by_email_and_password(email, password) do
+  #   if user = Users.get_by_email_and_password(email, password) do
   #     conn
   #     |> put_flash(:info, info)
   #     |> UserAuth.log_in_user(user, user_params)
@@ -52,7 +52,7 @@ defmodule BankWeb.UserSessionController do
   def create(conn, %{"user" => user_params}) do
     %{"email" => email, "password" => password} = user_params
 
-    if user = Users.get_user_by_email_and_password(email, password) do
+    if user = Users.get_by_email_and_password(email, password) do
       conn
       |> put_flash(:info, "Welcome back!")
       |> UserAuth.log_in_user(user, user_params)

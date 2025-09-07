@@ -12,8 +12,8 @@ defmodule BankWeb.Headquarters.UserLive.Index do
 
   @impl LiveView
   def handle_event("delete", %{"id" => id}, socket) do
-    user = Users.get_user!(id)
-    {:ok, _} = Users.delete_user(user)
+    user = Users.get!(id)
+    {:ok, _} = Users.delete(user)
 
     {:noreply, stream_delete(socket, :users, user)}
   end
@@ -32,7 +32,7 @@ defmodule BankWeb.Headquarters.UserLive.Index do
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit User")
-    |> assign(:user, Users.get_user!(id))
+    |> assign(:user, Users.get!(id))
   end
 
   defp apply_action(socket, :index, _params) do
