@@ -58,7 +58,7 @@ defmodule Bank.MixProject do
       {:lazy_html, ">= 0.1.0", only: :test},
       {:oban, "~> 2.19"},
       {:oban_web, "~> 2.11"},
-      {:phoenix, "~> 1.7.21"},
+      {:phoenix, "~> 1.8.1"},
       {:phoenix_ecto, "~> 4.5"},
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_dashboard, "~> 0.8.3"},
