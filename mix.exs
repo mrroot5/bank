@@ -66,7 +66,7 @@ defmodule Bank.MixProject do
       {:phoenix_live_view, "~> 1.0"},
       {:postgrex, ">= 0.0.0"},
       {:recode, "~> 0.7", only: :dev, runtime: false},
-      {:tailwind, "~> 0.3.1", runtime: get_mix_env() == :dev},
+      {:tailwind, "~> 0.4.0", runtime: get_mix_env() == :dev},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
       {:swoosh, "~> 1.5"}
