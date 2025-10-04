@@ -3,6 +3,7 @@ defmodule BankWeb.UserLiveTest do
 
   import Phoenix.LiveViewTest
 
+  alias Bank.Users
   alias BankWeb.ConnCase
 
   @superuser_role_attrs %{roles: [:superuser]}
@@ -47,6 +48,35 @@ defmodule BankWeb.UserLiveTest do
       {:ok, _index_live, html} = live(conn, ~p"/hq/users")
 
       assert html =~ "Listing Users"
+    end
+
+    test "loads initial users and paginates on scroll", %{conn: conn} do
+      users =
+        for i <- 1..30 do
+          {:ok, user} =
+            Users.register_user(%{
+              email: "user#{i}@example.com",
+              password: "Test P@ssword-#{i}"
+            })
+
+          user
+        end
+
+      {:ok, view, html} = live(conn, ~p"/hq/users")
+      # Check initial users are rendered
+      for user <- Enum.take(users, 10) do
+        assert html =~ user.email
+      end
+
+      # Simulate infinite scroll event
+      view
+      |> element("#user-scroll")
+      |> render_hook("next-page", %{"page_loading" => true})
+
+      # After next page, more users should be visible
+      for user <- Enum.slice(users, 10, 10) do
+        assert render(view) =~ user.email
+      end
     end
 
     test "updates user in listing", %{conn: conn, user: user} do
