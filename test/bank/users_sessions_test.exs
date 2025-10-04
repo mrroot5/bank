@@ -41,11 +41,11 @@ defmodule Bank.UsersSessionsTest do
     end
   end
 
-  describe "delete_user_session_token/1" do
+  describe "delete_session_token/1" do
     test "deletes the token" do
       user = UsersFixtures.fixture()
       token = UsersSessions.generate_user_session_token(user)
-      assert UsersSessions.delete_user_session_token(token) == :ok
+      assert UsersSessions.delete_session_token(token) == :ok
       refute UsersSessions.get_user_by_session_token(token)
     end
   end
