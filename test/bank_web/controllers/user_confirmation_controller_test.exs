@@ -91,7 +91,7 @@ defmodule BankWeb.UserConfirmationControllerTest do
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~
                "User confirmed successfully"
 
-      assert Users.get_user!(user.id).confirmed_at
+      assert Users.get!(user.id).confirmed_at
       refute get_session(conn, :user_token)
       assert Repo.all(Users.UserToken) == []
 
@@ -119,7 +119,7 @@ defmodule BankWeb.UserConfirmationControllerTest do
       assert Phoenix.Flash.get(conn.assigns.flash, :error) =~
                "User confirmation link is invalid or it has expired"
 
-      refute Users.get_user!(user.id).confirmed_at
+      refute Users.get!(user.id).confirmed_at
     end
   end
 end

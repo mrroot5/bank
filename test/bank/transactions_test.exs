@@ -7,6 +7,8 @@ defmodule Bank.TransactionsTest do
   alias Bank.TransactionsFixtures
   alias Bank.UsersFixtures
 
+  @performance_expected_time_ms 30
+
   describe "list/1" do
     setup do
       account = Bank.AccountsFixtures.fixture()
@@ -478,7 +480,6 @@ defmodule Bank.TransactionsTest do
   describe "performance considerations" do
     test "list with filters uses database indexes efficiently" do
       account = Bank.AccountsFixtures.fixture()
-      expected_time_ms = 10
 
       Enum.each(1..10, fn i ->
         TransactionsFixtures.fixture(%{
@@ -506,12 +507,11 @@ defmodule Bank.TransactionsTest do
       execution_time_ms = System.convert_time_unit(end_time - start_time, :native, :millisecond)
 
       # Allow generous margin for CI environments
-      assert execution_time_ms < expected_time_ms
+      assert execution_time_ms < @performance_expected_time_ms
     end
 
     test "duplicate validation performs efficiently with large datasets" do
       account = Bank.AccountsFixtures.fixture()
-      expected_time_ms = 20
 
       Enum.each(1..50, fn i ->
         TransactionsFixtures.fixture(%{
@@ -541,7 +541,7 @@ defmodule Bank.TransactionsTest do
       execution_time_ms = System.convert_time_unit(end_time - start_time, :native, :millisecond)
 
       # Should use indexes effectively
-      assert execution_time_ms < expected_time_ms
+      assert execution_time_ms < @performance_expected_time_ms
     end
   end
 

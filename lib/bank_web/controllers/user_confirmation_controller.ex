@@ -12,7 +12,7 @@ defmodule BankWeb.UserConfirmationController do
 
   @spec create(Conn.t(), map()) :: Conn.t()
   def create(conn, %{"user" => %{"email" => email}}) do
-    if user = Users.get_user_by_email(email) do
+    if user = Users.get_by_email(email) do
       UsersSessions.deliver_user_confirmation_instructions(
         user,
         &url(~p"/users/confirm/#{&1}")

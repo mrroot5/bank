@@ -54,7 +54,7 @@ defmodule BankWeb.UserResetPasswordControllerTest do
     setup %{user: user} do
       token =
         UsersFixtures.extract_user_token(fn url ->
-          Users.deliver_user_reset_password_instructions(user, url)
+          Users.deliver_reset_password_instructions(user, url)
         end)
 
       %{token: token}
@@ -78,7 +78,7 @@ defmodule BankWeb.UserResetPasswordControllerTest do
     setup %{user: user} do
       token =
         UsersFixtures.extract_user_token(fn url ->
-          Users.deliver_user_reset_password_instructions(user, url)
+          Users.deliver_reset_password_instructions(user, url)
         end)
 
       %{token: token}
@@ -99,7 +99,7 @@ defmodule BankWeb.UserResetPasswordControllerTest do
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~
                "Password reset successfully"
 
-      assert Users.get_user_by_email_and_password(user.email, @new_valid_password)
+      assert Users.get_by_email_and_password(user.email, @new_valid_password)
     end
 
     test "does not reset password on invalid data", %{conn: conn, token: token} do
