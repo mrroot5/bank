@@ -68,7 +68,7 @@ defmodule Bank.UsersSettingsTest do
         UsersSettings.apply_user_email(user, UsersFixtures.valid_user_password(), %{email: email})
 
       assert user.email == email
-      assert Users.get_user!(user.id).email != email
+      assert Users.get!(user.id).email != email
     end
   end
 
@@ -79,15 +79,15 @@ defmodule Bank.UsersSettingsTest do
     end
   end
 
-  describe "change_user_password/2" do
+  describe "change_password/2" do
     test "returns a user changeset" do
-      assert %Ecto.Changeset{} = changeset = Users.change_user_password(%User{})
+      assert %Ecto.Changeset{} = changeset = Users.change_password(%User{})
       assert changeset.required == [:password]
     end
 
     test "allows fields to be set" do
       changeset =
-        Users.change_user_password(%User{}, %{
+        Users.change_password(%User{}, %{
           "password" => @new_valid_password
         })
 
@@ -214,7 +214,7 @@ defmodule Bank.UsersSettingsTest do
         })
 
       assert is_nil(user.password)
-      assert Users.get_user_by_email_and_password(user.email, @new_valid_password)
+      assert Users.get_by_email_and_password(user.email, @new_valid_password)
     end
 
     test "deletes all tokens for the given user", %{user: user} do

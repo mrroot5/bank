@@ -15,7 +15,7 @@ defmodule BankWeb.Headquarters.UserLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:user, Users.get_user!(id))}
+     |> assign(:user, Users.get!(id))}
   end
 
   defp page_title(:show), do: "Show User"
