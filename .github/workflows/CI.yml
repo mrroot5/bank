@@ -18,7 +18,7 @@ jobs:
       MIX_ENV: dev
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: Set up Elixir ${{ matrix.elixir }} & OTP ${{ matrix.otp }}
         uses: erlef/setup-elixir@v1
@@ -27,7 +27,7 @@ jobs:
           otp-version: ${{matrix.otp}}
 
       - name: Restore compiled cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: _build/dev
           key:  ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-build-cache
@@ -35,7 +35,7 @@ jobs:
             ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-build-cache
 
       - name: Restore dependencies cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: deps
           key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-deps-cache
@@ -43,7 +43,7 @@ jobs:
             ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-deps-cache
 
       - name: Restore cldr cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: priv/cldr
           key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-cldr-cache
